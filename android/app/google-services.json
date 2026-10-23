@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1060184268623",
+    "project_id": "classtrack-9367b",
+    "storage_bucket": "classtrack-9367b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1060184268623:android:b9d0a877f191f4f96f2f3a",
+        "android_client_info": {
+          "package_name": "com.classtrack.classtrack"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDTdBE-MjVMdPNzXZ_jlmz76uG3-c1sfcY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

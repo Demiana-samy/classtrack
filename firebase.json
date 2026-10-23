@@ -1,9 +1,1 @@
-{
-  "firestore": {
-    "rules": "firestore.rules",
-    "indexes": "firestore.indexes.json"
-  },
-  "functions": [
-    { "source": "functions", "codebase": "default", "ignore": ["node_modules", ".git"] }
-  ]
-}
+{"firestore":{"rules":"firestore.rules","indexes":"firestore.indexes.json"},"functions":[{"source":"functions","codebase":"default","ignore":["node_modules",".git"]}],"flutter":{"platforms":{"android":{"default":{"projectId":"classtrack-9367b","appId":"1:1060184268623:android:b9d0a877f191f4f96f2f3a","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"classtrack-9367b","configurations":{"android":"1:1060184268623:android:b9d0a877f191f4f96f2f3a"}}}}}}
