@@ -1,12 +1,14 @@
 ## What does this PR do?
-<!-- One or two sentences. Link the issue: Closes #12 -->
+<!-- One or two sentences. Link the issue if you have one. -->
 
 ## Screens / features touched
 -
 
-## How I tested it
-- [ ] Ran on a real device / emulator
-- [ ] `flutter analyze` has no errors
-- [ ] Did not edit files owned by someone else (or told them)
-
-## Screenshots (UI changes)
+## Checklist
+- [ ] `flutter analyze` passes
+- [ ] `flutter test` passes
+- [ ] Tested on a real device / emulator
+- [ ] Screenshots attached (UI changes)
+- [ ] No hardcoded colors or fonts (use `AppColors` / `AppTheme` / `core/widgets`)
+- [ ] Screens do not import Firebase
+- [ ] I only changed my feature folder (or the leader approved shared-file edits)

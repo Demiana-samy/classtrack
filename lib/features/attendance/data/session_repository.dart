@@ -1,21 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import '../../../core/constants/app_constants.dart';
-
-/// A quiz question as sent by the teacher when starting a quiz session.
-class QuizQuestionInput {
-  const QuizQuestionInput({
-    required this.text,
-    required this.options,
-    required this.correctIndex,
-  });
-  final String text;
-  final List<String> options; // exactly 4
-  final int correctIndex; // 0..3
-
-  Map<String, dynamic> toMap() =>
-      {'text': text, 'options': options, 'correctIndex': correctIndex};
-}
+import '../../quiz/data/quiz_question_draft.dart';
 
 class SessionRepository {
   SessionRepository(this._db, this._functions);
@@ -30,7 +16,7 @@ class SessionRepository {
     required double latitude,
     required double longitude,
     required int radius,
-    List<QuizQuestionInput>? questions,
+    List<QuizQuestionDraft>? questions,
   }) async {
     final res = await _functions.httpsCallable('startSession').call({
       'classId': classId,

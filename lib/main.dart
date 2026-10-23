@@ -97,10 +97,10 @@ class DesignPreviewApp extends StatelessWidget {
     final router = GoRouter(
       initialLocation: '/design-preview',
       routes: [
-        GoRoute(path: '/design-preview', builder: (_, __) => const DesignPreviewScreen()),
-        GoRoute(path: '/login', builder: (_, __) => const LoginScreen()),
-        GoRoute(path: '/register', builder: (_, __) => const RegisterScreen()),
-        GoRoute(path: '/splash', builder: (_, __) => const SplashScreen()),
+        GoRoute(path: AppRoutes.designPreview, builder: (_, __) => const DesignPreviewScreen()),
+        GoRoute(path: AppRoutes.login, builder: (_, __) => const LoginScreen()),
+        GoRoute(path: AppRoutes.register, builder: (_, __) => const RegisterScreen()),
+        GoRoute(path: AppRoutes.splash, builder: (_, __) => const SplashScreen()),
       ],
     );
     return BlocProvider(

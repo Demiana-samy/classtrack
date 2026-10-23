@@ -22,4 +22,18 @@ void setupDi() {
     ..registerLazySingleton(() => AttendanceRepository(db, functions))
     ..registerLazySingleton(() => LocationService())
     ..registerLazySingleton(() => AuthCubit(sl<AuthRepository>()));
+
+  // --- Cubits teammates will add (leader registers them here) ---
+  // sl.registerFactory(() => TeacherHomeCubit(sl<ClassRepository>()));
+  // sl.registerFactory(() => CreateClassCubit(sl<ClassRepository>()));
+  // sl.registerFactory(() => ClassDetailsCubit(sl<ClassRepository>()));
+  // sl.registerFactory(() => StudentHomeCubit(sl<ClassRepository>(), sl<SessionRepository>()));
+  // sl.registerFactory(() => JoinClassCubit(sl<ClassRepository>()));
+  // sl.registerFactory(() => StartSessionCubit(sl<SessionRepository>(), sl<LocationService>()));
+  // sl.registerFactory(() => ActiveSessionCubit(sl<SessionRepository>(), sl<AttendanceRepository>(), sl<LocationService>()));
+  // sl.registerFactory(() => LiveDashboardCubit(sl<AttendanceRepository>(), sl<SessionRepository>()));
+  // sl.registerFactory(() => SessionResultsCubit(sl<AttendanceRepository>(), sl<ClassRepository>()));
+  // sl.registerFactory(() => QuizBuilderCubit());
+  // sl.registerFactory(() => QuizCubit(sl<SessionRepository>(), sl<AttendanceRepository>()));
+  // sl.registerFactory(() => AttendanceHistoryCubit(sl<AttendanceRepository>()));
 }

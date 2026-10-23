@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/app_logo.dart';
 import '../../../core/widgets/app_text_field.dart';
@@ -27,6 +28,12 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
+  void _submit() {
+    if (_form.currentState!.validate()) {
+      context.read<AuthCubit>().login(_email.text, _password.text);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<AuthCubit, AuthState>(
@@ -34,7 +41,7 @@ class _LoginScreenState extends State<LoginScreen> {
       listener: (context, state) => ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           backgroundColor: AppColors.card,
-          content: Text(state.error!, style: const TextStyle(color: Colors.white)),
+          content: Text(state.error!),
         ),
       ),
       builder: (context, state) => Scaffold(
@@ -52,7 +59,11 @@ class _LoginScreenState extends State<LoginScreen> {
                     'Welcome back',
                     style: TextStyle(fontSize: 26, fontWeight: FontWeight.w600),
                   ),
-                  const Text('Log in to continue', style: TextStyle(color: AppColors.muted)),
+                  const SizedBox(height: 4),
+                  const Text(
+                    'Log in to continue',
+                    style: TextStyle(color: AppColors.muted, fontSize: 16),
+                  ),
                   const SizedBox(height: 28),
                   AppTextField(
                     controller: _email,
@@ -73,21 +84,17 @@ class _LoginScreenState extends State<LoginScreen> {
                   PrimaryButton(
                     label: 'Log in',
                     loading: state.isBusy,
-                    onPressed: () {
-                      if (_form.currentState!.validate()) {
-                        context.read<AuthCubit>().login(_email.text, _password.text);
-                      }
-                    },
+                    onPressed: _submit,
                   ),
                   const SizedBox(height: 16),
                   TextButton(
-                    onPressed: () => context.go('/register'),
+                    onPressed: () => context.go(AppRoutes.register),
                     child: const Text('New here? Create account'),
                   ),
                   if (kDebugMode) ...[
                     const SizedBox(height: 8),
                     TextButton(
-                      onPressed: () => context.push('/design-preview'),
+                      onPressed: () => context.push(AppRoutes.designPreview),
                       child: const Text(
                         'Design Preview',
                         style: TextStyle(color: AppColors.muted, fontSize: 12),
