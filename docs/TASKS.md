@@ -1,37 +1,123 @@
-# Task split (edit names, then create one GitHub Issue per line)
+# ClassTrack screens
 
-Already done in the starter: project structure, theme, shared widgets, Firebase wiring,
-Auth (login/register/roles/redirects), router with all routes as TODO screens, repositories,
-location service, Cloud Functions (startSession, submitAttendance), Firestore rules.
+Owners are roles, not people: **Leader / Member 1 / Member 2 / Member 3**.
+Replace the body of **your screen file only**. Do not edit `app_router.dart`, `app_theme.dart`, `injection.dart`, or `core/widgets` — ask the leader.
 
-Phase 0 foundations (done): bundled Cairo font (no google_fonts), app logo + launcher icon
-config, Firebase/auth start error screens, debug `/design-preview` catalog with mock data.
+Status: **Ready** = UI can be built against mock data and the route is registered. **Done** = shipped.
 
-## Week 1 - Foundation
-| # | Task | Owner | Files |
-|---|------|-------|-------|
-| 1 | Firebase project + `flutterfire configure` + deploy rules/functions | Leader | firebase_options.dart |
-| 2 | Teacher home: class list + Create class screen | Member 2 | classes/presentation |
-| 3 | Class details (students + sessions tabs) | Member 2 | classes/presentation |
-| 4 | Student home + Join class by code | Member 2 | classes/presentation |
-| 5 | Polish Login/Register to match the design | Member 1 | auth/presentation |
+| # | Screen | Owner | Feature folder | File | Status |
+|---|--------|-------|----------------|------|--------|
+| 1 | Splash | Leader | `features/auth` | `lib/features/auth/presentation/splash_screen.dart` | Done |
+| 2 | Login | Leader | `features/auth` | `lib/features/auth/presentation/login_screen.dart` | Done |
+| 3 | Register | Leader | `features/auth` | `lib/features/auth/presentation/register_screen.dart` | Done |
+| 4 | Teacher Home | Member 1 | `features/classes` | `lib/features/classes/presentation/teacher_home_screen.dart` | Ready |
+| 5 | Create Class | Member 1 | `features/classes` | `lib/features/classes/presentation/create_class_screen.dart` | Ready |
+| 6 | Class Details | Member 1 | `features/classes` | `lib/features/classes/presentation/class_details_screen.dart` | Ready |
+| 7 | Start Session | Leader | `features/attendance` | `lib/features/attendance/presentation/start_session_screen.dart` | Ready |
+| 8 | Quiz Builder | Member 3 | `features/quiz` | `lib/features/quiz/presentation/quiz_builder_screen.dart` | Ready |
+| 9 | Live Dashboard | Member 1 | `features/attendance` | `lib/features/attendance/presentation/live_dashboard_screen.dart` | Ready |
+| 10 | Session Results | Member 3 | `features/attendance` | `lib/features/attendance/presentation/session_results_screen.dart` | Ready |
+| 11 | Student Home | Member 2 | `features/classes` | `lib/features/classes/presentation/student_home_screen.dart` | Ready |
+| 12 | Join Class | Member 2 | `features/classes` | `lib/features/classes/presentation/join_class_screen.dart` | Ready |
+| 13 | Active Session | Leader | `features/attendance` | `lib/features/attendance/presentation/active_session_screen.dart` | Ready |
+| 14 | Quiz | Member 2 | `features/quiz` | `lib/features/quiz/presentation/quiz_screen.dart` | Ready |
+| 15 | Result | Leader | `features/attendance` | `lib/features/attendance/presentation/result_screen.dart` | Done |
+| 16 | Attendance History | Member 2 | `features/attendance` | `lib/features/attendance/presentation/attendance_history_screen.dart` | Ready |
 
-## Week 2 - Mode 1 (Punch-In)
-| 6 | Start session screen (mode, radius slider, GPS) | Member 3 | attendance/presentation |
-| 7 | Student Active Session screen (countdown + PUNCH IN) | Member 3 | attendance/presentation |
-| 8 | Result screen (accepted / rejected with reason) | Member 3 | attendance/presentation |
-| 9 | Test with 2 phones: near / far / expired / duplicate | Everyone | - |
+Mock data (no Firebase): `features/<name>/data/mock_*.dart`.
 
-## Week 3 - Mode 2 (Quiz)
-| 10 | Quiz builder (5 questions form + validation) | Member 4 | quiz/presentation |
-| 11 | Student quiz screen (timer, progress, submit) | Member 4 | quiz/presentation |
-| 12 | Quiz result with score | Member 4 | quiz/presentation |
+## Checklist (copy into your PR)
 
-## Week 4 - Management and polish
-| 13 | Teacher live dashboard (stream of records) | Member 5 | attendance/presentation |
-| 14 | Session results + absent list (enrolled minus present) | Member 5 | attendance/presentation |
-| 15 | Student attendance history | Member 5 | attendance/presentation |
-| 16 | Error states: GPS off, permission denied, no internet | Member 1 | core |
-| 17 | README final, demo video, report | Leader | - |
+### 4 Teacher Home — Member 1
+- [ ] UI with mock data
+- [ ] Cubit
+- [ ] Connect to repository
+- [ ] Loading / empty / error states
+- [ ] Tested on phone
 
-Absent students are NOT stored. Compute: enrolled students minus students with a `present` record.
+### 5 Create Class — Member 1
+- [ ] UI with mock data
+- [ ] Cubit
+- [ ] Connect to repository
+- [ ] Loading / empty / error states
+- [ ] Tested on phone
+
+### 6 Class Details — Member 1
+- [ ] UI with mock data
+- [ ] Cubit
+- [ ] Connect to repository
+- [ ] Loading / empty / error states
+- [ ] Tested on phone
+
+### 7 Start Session — Leader
+- [ ] UI with mock data
+- [ ] Cubit
+- [ ] Connect to repository (`startSession`; quiz list is `List<QuizQuestionDraft>`)
+- [ ] Loading / empty / error states
+- [ ] Tested on phone
+
+### 8 Quiz Builder — Member 3
+- [ ] UI with mock data
+- [ ] Cubit
+- [ ] Connect to repository (pop `List<QuizQuestionDraft>` of 5; use `QuizDraftValidator`)
+- [ ] Loading / empty / error states
+- [ ] Tested on phone
+
+### 9 Live Dashboard — Member 1
+- [ ] UI with mock data
+- [ ] Cubit
+- [ ] Connect to repository
+- [ ] Loading / empty / error states
+- [ ] Tested on phone
+
+### 10 Session Results — Member 3
+- [ ] UI with mock data
+- [ ] Cubit
+- [ ] Connect to repository (absent = enrolled minus present)
+- [ ] Loading / empty / error states
+- [ ] Tested on phone
+
+### 11 Student Home — Member 2
+- [ ] UI with mock data
+- [ ] Cubit
+- [ ] Connect to repository
+- [ ] Loading / empty / error states
+- [ ] Tested on phone
+
+### 12 Join Class — Member 2
+- [ ] UI with mock data
+- [ ] Cubit
+- [ ] Connect to repository
+- [ ] Loading / empty / error states
+- [ ] Tested on phone
+
+### 13 Active Session — Leader
+- [ ] UI with mock data
+- [ ] Cubit
+- [ ] Connect to repository
+- [ ] Loading / empty / error states
+- [ ] Tested on phone
+
+### 14 Quiz — Member 2
+- [ ] UI with mock data
+- [ ] Cubit
+- [ ] Connect to repository
+- [ ] Loading / empty / error states
+- [ ] Tested on phone
+
+### 15 Result — Leader
+- [x] UI with mock data
+- [x] Cubit (display-only; no Cubit required)
+- [x] Connect to repository (maps server reason codes)
+- [x] Loading / empty / error states
+- [x] Tested on phone (widget tests + Design Preview)
+
+### 16 Attendance History — Member 2
+- [ ] UI with mock data
+- [ ] Cubit
+- [ ] Connect to repository
+- [ ] Loading / empty / error states
+- [ ] Tested on phone
+
+## Already in the starter
+Project structure, theme, shared widgets, Firebase wiring, auth, router for all 16 screens, repositories, location service, Cloud Functions, Firestore rules, Design Preview.

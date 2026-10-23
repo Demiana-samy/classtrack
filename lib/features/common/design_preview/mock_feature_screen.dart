@@ -4,7 +4,8 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/countdown_ring.dart';
 import '../../../core/widgets/primary_button.dart';
 import '../../../core/widgets/status_chip.dart';
-import 'preview_mocks.dart';
+import '../../attendance/data/mock_attendance.dart';
+import '../../classes/data/mock_classes.dart';
 
 /// Review-only layout used until the real feature screen is built.
 /// Data is constructor-driven so later phases can swap this for the real widget.
@@ -62,7 +63,7 @@ class MockFeatureScreen extends StatelessWidget {
 class MockTeacherHomePreview extends StatelessWidget {
   const MockTeacherHomePreview({super.key, this.classes = mockClasses});
 
-  final List<MockClass> classes;
+  final List<MockClassInfo> classes;
 
   @override
   Widget build(BuildContext context) {
@@ -100,7 +101,7 @@ class MockTeacherHomePreview extends StatelessWidget {
 }
 
 class MockCreateClassPreview extends StatelessWidget {
-  const MockCreateClassPreview({super.key, this.joinCode = 'K7MP2Q'});
+  const MockCreateClassPreview({super.key, this.joinCode = 'MP-4K9X'});
 
   final String joinCode;
 
@@ -163,8 +164,8 @@ class _StudentTab extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: const [
-        ListTile(title: Text('Omar Ali'), subtitle: Text('20231234')),
-        ListTile(title: Text('Lina Hassan'), subtitle: Text('20230011')),
+        ListTile(title: Text('Mohamed'), subtitle: Text('20231234')),
+        ListTile(title: Text('Ahmed'), subtitle: Text('20230011')),
       ],
     );
   }
@@ -194,7 +195,7 @@ class MockStudentHomePreview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const MockFeatureScreen(
-      title: 'Hi, Omar',
+      title: 'Hi, Mohamed',
       subtitle: 'Active session card + my classes + Join a class.',
       body: Column(
         children: [
@@ -229,7 +230,7 @@ class MockJoinClassPreview extends StatelessWidget {
       title: 'Join a class',
       subtitle: '6-character uppercase code. Success and error states live here.',
       body: _Card(
-        child: Text('K7MP2Q', style: TextStyle(fontSize: 28, letterSpacing: 6, fontWeight: FontWeight.w600)),
+        child: Text('MP-4K9X', style: TextStyle(fontSize: 28, letterSpacing: 6, fontWeight: FontWeight.w600)),
       ),
     );
   }
@@ -396,9 +397,9 @@ class MockQuizPreview extends StatelessWidget {
 }
 
 class MockLiveDashboardPreview extends StatelessWidget {
-  const MockLiveDashboardPreview({super.key, this.records = mockRecords});
+  const MockLiveDashboardPreview({super.key, this.records = mockAttendanceRecords});
 
-  final List<MockRecord> records;
+  final List<MockAttendanceRecord> records;
 
   @override
   Widget build(BuildContext context) {

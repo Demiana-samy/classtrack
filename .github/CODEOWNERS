@@ -1,0 +1,9 @@
+# Shared foundation — leader reviews these paths.
+core/ @Demiana-samy
+lib/core/ @Demiana-samy
+lib/firebase_options.dart @Demiana-samy
+android/app/google-services.json @Demiana-samy
+ios/Runner/GoogleService-Info.plist @Demiana-samy
+firestore.rules @Demiana-samy
+firestore.indexes.json @Demiana-samy
+functions/ @Demiana-samy

@@ -6,16 +6,37 @@ Course: Mobile Programming, Level 2, Dr. Amany.
 A teacher opens a 2-minute session. Only students physically inside the allowed radius can be recorded as present.
 **All validation runs on the server** (Cloud Function), never only on the phone.
 
-## What is already built (starter)
-- Project structure, dark indigo theme, bundled Cairo font (offline), app logo (`assets/images/logo.png`)
-- Shared widgets (button, text field, countdown ring, status chip, logo, error view)
-- Auth: login, register with role (teacher/student), role-based routing
-- Readable error screens if Firebase init or auth start fails (no blank screen)
-- Debug-only Design Preview (`/design-preview`) with mock data and no Firebase calls
-- Router with every screen as a TODO placeholder (see `docs/TASKS.md` for owners)
-- Repositories for classes, sessions, attendance, and a location service
-- Cloud Functions: `startSession`, `submitAttendance`, `closeExpiredSessions`
-- Firestore security rules (clients cannot write attendance records or sessions)
+## Current status
+Foundation is ready for parallel screen work. Routes, placeholders, mock data, and contracts are in place.
+
+**Done:** Splash (1), Login (2), Register (3), Result (15), theme, shared widgets, repositories, Cloud Functions, Firestore rules, Design Preview, CI.
+
+**Ready for teammates (replace the screen file body only):** Teacher Home, Create Class, Class Details, Live Dashboard, Student Home, Join Class, Quiz, Attendance History, Quiz Builder, Session Results. Leader still builds Start Session and Active Session.
+
+See `docs/TASKS.md` and `CONTRIBUTING.md`.
+
+## Screen ownership
+
+Fill names when the team is assigned.
+
+| # | Screen | Owner role | Name |
+|---|--------|------------|------|
+| 1 | Splash | Leader | |
+| 2 | Login | Leader | |
+| 3 | Register | Leader | |
+| 4 | Teacher Home | Member 1 | |
+| 5 | Create Class | Member 1 | |
+| 6 | Class Details | Member 1 | |
+| 7 | Start Session | Leader | |
+| 8 | Quiz Builder | Member 3 | |
+| 9 | Live Dashboard | Member 1 | |
+| 10 | Session Results | Member 3 | |
+| 11 | Student Home | Member 2 | |
+| 12 | Join Class | Member 2 | |
+| 13 | Active Session | Leader | |
+| 14 | Quiz | Member 2 | |
+| 15 | Result | Leader | |
+| 16 | Attendance History | Member 2 | |
 
 ## Architecture
 Feature-first, three layers, repository pattern, Cubit (flutter_bloc) for state.
@@ -34,8 +55,8 @@ lib/
     auth/        data/ (AppUser, AuthRepository)   presentation/ (AuthCubit, login, register, splash)
     classes/     data/ (ClassRepository)           presentation/ (teacher + student class screens)
     attendance/  data/ (SessionRepository, AttendanceRepository, LocationService)  presentation/
-    quiz/        data/                              presentation/
-    common/      todo_screen.dart, home_shell.dart, design_preview/ (debug mocks)
+    quiz/        data/ (QuizQuestionDraft)         presentation/
+    common/      todo_screen.dart, home_shell.dart, design_preview/
 functions/index.js                 Cloud Functions
 firestore.rules                    security rules
 docs/TASKS.md                      who does what
@@ -45,25 +66,30 @@ Dependency direction: `screen -> Cubit -> Repository -> Firebase`. Screens never
 ## Setup (every team member)
 1. Install Flutter, Android Studio, Node.js 20, Firebase CLI (`npm i -g firebase-tools`).
 2. `git clone <repo-url> && cd classtrack && flutter pub get`
-3. Ask the leader to add you to the Firebase project, then:
-   ```bash
-   dart pub global activate flutterfire_cli
-   flutterfire configure        # pick the team project, platforms android + ios
-   ```
-   If the leader already committed `firebase_options.dart`, skip this step.
+3. Ask the leader to add you to the Firebase project. If `firebase_options.dart` is still a placeholder, wait for the leader to run `flutterfire configure` and commit the generated files.
 4. `flutter run` on a **real phone** (GPS on, location permission allowed).
 
 ## Setup (leader, once)
+`firebase_options.dart` is still a **placeholder**. Do this on your machine (needs your Firebase account — the repo cannot fake it):
+
 ```bash
-./setup.sh                       # generates android/ios, adds location permissions
-dart run flutter_launcher_icons  # writes the ClassTrack logo to launcher icons
+dart pub global activate flutterfire_cli
 firebase login
-firebase use --add               # choose the Firebase project
+firebase use --add                 # choose / create the team project
+flutterfire configure              # Android + iOS; commit firebase_options.dart,
+                                   # android/app/google-services.json,
+                                   # ios/Runner/GoogleService-Info.plist
 cd functions && npm install && cd ..
 firebase deploy --only firestore:rules,firestore:indexes,functions
 ```
-Firebase console: enable **Authentication > Email/Password** and create **Firestore** (production mode).
-Cloud Functions need the **Blaze** plan (free quota is enough).
+
+Then in Firebase console:
+
+1. Authentication → Sign-in method → enable **Email/Password**
+2. Create a **Firestore** database (production mode is fine; rules are in the repo)
+3. Cloud Functions need the **Blaze** plan (free quota is enough)
+
+Optional: `dart run flutter_launcher_icons` if launcher icons need regenerating.
 
 ## Firestore schema
 - `users`: name, email, role, studentID

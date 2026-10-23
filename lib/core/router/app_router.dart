@@ -1,13 +1,28 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
+import '../../features/attendance/presentation/active_session_screen.dart';
+import '../../features/attendance/presentation/attendance_history_screen.dart';
+import '../../features/attendance/presentation/live_dashboard_screen.dart';
+import '../../features/attendance/presentation/result_screen.dart';
+import '../../features/attendance/presentation/session_results_screen.dart';
+import '../../features/attendance/presentation/start_session_screen.dart';
 import '../../features/auth/presentation/auth_cubit.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/register_screen.dart';
 import '../../features/auth/presentation/splash_screen.dart';
+import '../../features/classes/presentation/class_details_screen.dart';
+import '../../features/classes/presentation/create_class_screen.dart';
+import '../../features/classes/presentation/join_class_screen.dart';
+import '../../features/classes/presentation/student_home_screen.dart';
+import '../../features/classes/presentation/teacher_home_screen.dart';
 import '../../features/common/design_preview/design_preview_screen.dart';
-import '../../features/common/home_shell.dart';
-import '../../features/common/todo_screen.dart';
+import '../../features/quiz/data/quiz_question_draft.dart';
+import '../../features/quiz/presentation/quiz_builder_screen.dart';
+import '../../features/quiz/presentation/quiz_screen.dart';
+import 'app_routes.dart';
+
+export 'app_routes.dart';
 
 /// Re-runs the router redirect whenever the auth state changes.
 class _AuthRefresh extends ChangeNotifier {
@@ -23,101 +38,132 @@ class _AuthRefresh extends ChangeNotifier {
   }
 }
 
+List<QuizQuestionDraft>? _questionsExtra(Object? extra) {
+  if (extra is List<QuizQuestionDraft>) return extra;
+  if (extra is List) return extra.whereType<QuizQuestionDraft>().toList();
+  return null;
+}
+
+ResultScreen _resultFromState(GoRouterState s) {
+  final extra = s.extra;
+  if (extra is ResultArgs) {
+    return ResultScreen(
+      accepted: extra.accepted,
+      reason: extra.reason,
+      distance: extra.distance,
+      radius: extra.radius,
+      score: extra.score,
+    );
+  }
+  final q = s.uri.queryParameters;
+  return ResultScreen(
+    accepted: q['accepted'] == 'true',
+    reason: q['reason'],
+    distance: double.tryParse(q['distance'] ?? ''),
+    radius: int.tryParse(q['radius'] ?? ''),
+    score: int.tryParse(q['score'] ?? ''),
+  );
+}
+
 GoRouter buildRouter(AuthCubit auth) {
-  const authPaths = {'/splash', '/login', '/register'};
+  const authPaths = {
+    AppRoutes.splash,
+    AppRoutes.login,
+    AppRoutes.register,
+  };
 
   return GoRouter(
-    initialLocation: '/splash',
+    initialLocation: AppRoutes.splash,
     refreshListenable: _AuthRefresh(auth.stream),
     redirect: (context, state) {
       final s = auth.state;
       final loc = state.matchedLocation;
 
-      if (kDebugMode && loc.startsWith('/design-preview')) return null;
-      if (!kDebugMode && loc.startsWith('/design-preview')) {
+      if (kDebugMode && loc.startsWith(AppRoutes.designPreview)) return null;
+      if (!kDebugMode && loc.startsWith(AppRoutes.designPreview)) {
         return s.status == AuthStatus.authenticated
-            ? (s.user!.isTeacher ? '/teacher' : '/student')
-            : '/login';
+            ? (s.user!.isTeacher ? AppRoutes.teacherHome : AppRoutes.studentHome)
+            : AppRoutes.login;
       }
 
       if (s.status == AuthStatus.unknown || s.status == AuthStatus.failed) {
-        return loc == '/splash' ? null : '/splash';
+        return loc == AppRoutes.splash ? null : AppRoutes.splash;
       }
       if (s.status == AuthStatus.unauthenticated) {
-        return (loc == '/login' || loc == '/register') ? null : '/login';
+        return (loc == AppRoutes.login || loc == AppRoutes.register) ? null : AppRoutes.login;
       }
-      final home = s.user!.isTeacher ? '/teacher' : '/student';
+      final home = s.user!.isTeacher ? AppRoutes.teacherHome : AppRoutes.studentHome;
       if (authPaths.contains(loc)) return home;
-      if (s.user!.isTeacher && loc.startsWith('/student')) return home;
-      if (!s.user!.isTeacher && loc.startsWith('/teacher')) return home;
+      if (s.user!.isTeacher && loc.startsWith(AppRoutes.studentHome)) return home;
+      if (!s.user!.isTeacher && loc.startsWith(AppRoutes.teacherHome)) return home;
       return null;
     },
     routes: [
-      GoRoute(path: '/splash', builder: (_, __) => const SplashScreen()),
-      GoRoute(path: '/login', builder: (_, __) => const LoginScreen()),
-      GoRoute(path: '/register', builder: (_, __) => const RegisterScreen()),
+      GoRoute(path: AppRoutes.splash, builder: (_, __) => const SplashScreen()),
+      GoRoute(path: AppRoutes.login, builder: (_, __) => const LoginScreen()),
+      GoRoute(path: AppRoutes.register, builder: (_, __) => const RegisterScreen()),
       GoRoute(
-        path: '/design-preview',
+        path: AppRoutes.designPreview,
         builder: (_, __) => const DesignPreviewScreen(),
       ),
 
-      // ---------------- Teacher ----------------
       GoRoute(
-        path: '/teacher',
-        builder: (_, __) => const HomeShell(isTeacher: true), // TODO Member 2
+        path: AppRoutes.teacherHome,
+        builder: (_, __) => const TeacherHomeScreen(),
         routes: [
           GoRoute(
             path: 'create-class',
-            builder: (_, __) => const TodoScreen(title: 'Create class', owner: 'Member 2'),
+            builder: (_, __) => const CreateClassScreen(),
           ),
           GoRoute(
             path: 'class/:classId',
-            builder: (_, s) => TodoScreen(
-                title: 'Class details (${s.pathParameters['classId']})', owner: 'Member 2'),
+            builder: (_, s) => ClassDetailsScreen(classId: s.pathParameters['classId']!),
           ),
           GoRoute(
             path: 'start-session/:classId',
-            builder: (_, __) => const TodoScreen(title: 'Start session', owner: 'Member 3'),
+            builder: (_, s) => StartSessionScreen(
+              classId: s.pathParameters['classId']!,
+              questions: _questionsExtra(s.extra),
+            ),
           ),
           GoRoute(
             path: 'quiz-builder/:classId',
-            builder: (_, __) => const TodoScreen(title: 'Quiz builder', owner: 'Member 4'),
+            builder: (_, s) => QuizBuilderScreen(classId: s.pathParameters['classId']!),
           ),
           GoRoute(
             path: 'live/:sessionId',
-            builder: (_, __) => const TodoScreen(title: 'Live dashboard', owner: 'Member 5'),
+            builder: (_, s) => LiveDashboardScreen(sessionId: s.pathParameters['sessionId']!),
           ),
           GoRoute(
             path: 'results/:sessionId',
-            builder: (_, __) => const TodoScreen(title: 'Session results', owner: 'Member 5'),
+            builder: (_, s) => SessionResultsScreen(sessionId: s.pathParameters['sessionId']!),
           ),
         ],
       ),
 
-      // ---------------- Student ----------------
       GoRoute(
-        path: '/student',
-        builder: (_, __) => const HomeShell(isTeacher: false), // TODO Member 2
+        path: AppRoutes.studentHome,
+        builder: (_, __) => const StudentHomeScreen(),
         routes: [
           GoRoute(
             path: 'join',
-            builder: (_, __) => const TodoScreen(title: 'Join class', owner: 'Member 2'),
+            builder: (_, __) => const JoinClassScreen(),
           ),
           GoRoute(
             path: 'session/:sessionId',
-            builder: (_, __) => const TodoScreen(title: 'Active session', owner: 'Member 3'),
+            builder: (_, s) => ActiveSessionScreen(sessionId: s.pathParameters['sessionId']!),
           ),
           GoRoute(
             path: 'quiz/:sessionId',
-            builder: (_, __) => const TodoScreen(title: 'Quiz', owner: 'Member 4'),
+            builder: (_, s) => QuizScreen(sessionId: s.pathParameters['sessionId']!),
           ),
           GoRoute(
             path: 'result',
-            builder: (_, __) => const TodoScreen(title: 'Result', owner: 'Member 3'),
+            builder: (_, s) => _resultFromState(s),
           ),
           GoRoute(
             path: 'history',
-            builder: (_, __) => const TodoScreen(title: 'Attendance history', owner: 'Member 5'),
+            builder: (_, __) => const AttendanceHistoryScreen(),
           ),
         ],
       ),
