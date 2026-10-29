@@ -48,7 +48,7 @@ lib/
   core/
     theme/app_theme.dart           colors, fonts, buttons (single source of truth)
     constants/app_constants.dart   2-minute duration, collection names, roles, modes
-    router/app_router.dart         go_router + role redirects
+    router/app_router.dart         Navigator route generator
     di/injection.dart              get_it registrations
     widgets/                       primary_button, app_text_field, countdown_ring, status_chip, app_logo, error_view
   features/
