@@ -99,7 +99,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         'Design Preview',
                         style: TextStyle(color: AppColors.muted, fontSize: 12),
                       ),
-                    ),
+                    ),                                                                                                                                
                   ],
                 ],
               ),
