@@ -1,7 +1,5 @@
 import '../../domain/entities/quiz_question.dart';
 
-/// Data model representing a teacher-authored quiz question draft.
-/// Payload matches `startSession` in functions/index.js: `{ text, options[4], correctIndex }`.
 class QuizQuestionDraft extends QuizQuestion {
   const QuizQuestionDraft({
     required super.text,

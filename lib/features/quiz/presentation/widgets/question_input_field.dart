@@ -18,19 +18,25 @@ class QuestionInputField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final onSurface = Theme.of(context).colorScheme.onSurface;
     return TextFormField(
       controller: controller,
       onChanged: onChanged,
       validator: validator,
       minLines: 1,
       maxLines: 3,
-      style: AppTextStyles.withColor(AppTextStyles.cairo16W400, Colors.white),
+      style: AppTextStyles.withColor(
+        AppTextStyles.cairo16W400,
+        onSurface,
+      ),
       decoration: InputDecoration(
         hintText: hintText,
-        hintStyle: AppTextStyles.withColor(AppTextStyles.cairo15W400, AppColors.muted),
+        hintStyle:
+            AppTextStyles.withColor(AppTextStyles.cairo15W400, AppColors.muted),
         filled: true,
         fillColor: AppColors.card,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: AppColors.border),

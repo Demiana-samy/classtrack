@@ -20,8 +20,8 @@ import '../../classes/presentation/join_class_screen.dart';
 import '../../classes/presentation/student_home_screen.dart';
 import '../../classes/presentation/teacher_home_screen.dart';
 import '../../quiz/data/mock_quiz.dart';
-import '../../quiz/presentation/quiz_builder_screen.dart';
-import '../../quiz/presentation/quiz_screen.dart';
+import '../../quiz/presentation/pages/quiz_build_screen.dart';
+import '../../quiz/presentation/pages/quiz_screen.dart';
 
 class PreviewEntry {
   const PreviewEntry({
@@ -166,7 +166,8 @@ List<PreviewEntry> previewCatalog() => [
         id: '10-results',
         title: '10 Session Results',
         group: 'Member 3',
-        builder: (_) => const SessionResultsScreen(sessionId: 'session-preview'),
+        builder: (_) =>
+            const SessionResultsScreen(sessionId: 'session-preview'),
       ),
       PreviewEntry(
         id: 'bootstrap-error',
@@ -239,7 +240,8 @@ class DesignPreviewScreen extends StatelessWidget {
                         );
                       },
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 14),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(14),
                           border: Border.all(color: AppColors.border),
@@ -247,9 +249,11 @@ class DesignPreviewScreen extends StatelessWidget {
                         child: Row(
                           children: [
                             Expanded(
-                              child: Text(item.title, style: const TextStyle(fontSize: 16)),
+                              child: Text(item.title,
+                                  style: const TextStyle(fontSize: 16)),
                             ),
-                            const Icon(Icons.chevron_right, color: AppColors.muted),
+                            const Icon(Icons.chevron_right,
+                                color: AppColors.muted),
                           ],
                         ),
                       ),

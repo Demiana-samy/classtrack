@@ -8,11 +8,9 @@ class SessionRepository {
   final FirebaseFirestore _db;
   final FirebaseFunctions _functions;
 
-  /// Session creation goes through a Cloud Function so start/expiry times come from the server.
-  /// Returns the new session id.
   Future<String> startSession({
     required String classId,
-    required String mode, // Modes.punchIn | Modes.quiz
+    required String mode, 
     required double latitude,
     required double longitude,
     required int radius,
@@ -32,9 +30,6 @@ class SessionRepository {
   Stream<DocumentSnapshot<Map<String, dynamic>>> watchSession(String sessionId) =>
       _db.collection(Col.sessions).doc(sessionId).snapshots();
 
-  /// Active sessions for the classes a student is enrolled in.
-  /// Firestore `whereIn` accepts at most 30 ids.
-  /// Students see sessions even when far away (assignment rule). Filter expired ones on the client.
   Stream<QuerySnapshot<Map<String, dynamic>>> watchActiveSessions(List<String> classIds) =>
       _db
           .collection(Col.sessions)
@@ -42,7 +37,6 @@ class SessionRepository {
           .where('status', isEqualTo: 'active')
           .snapshots();
 
-  /// Quiz questions WITHOUT the correct answers (those live in a teacher-only doc).
   Future<List<Map<String, dynamic>>> fetchQuestions(String sessionId) async {
     final q = await _db
         .collection(Col.sessions)

@@ -16,8 +16,8 @@ import '../../features/classes/presentation/student_home_screen.dart';
 import '../../features/classes/presentation/teacher_home_screen.dart';
 import '../../features/common/design_preview/design_preview_screen.dart';
 import '../../features/quiz/data/models/quiz_question_model.dart';
-import '../../features/quiz/presentation/quiz_builder_screen.dart';
-import '../../features/quiz/presentation/quiz_screen.dart';
+import '../../features/quiz/presentation/pages/quiz_build_screen.dart';
+import '../../features/quiz/presentation/pages/quiz_screen.dart';
 
 /// Named routes for every screen. Navigate with [Navigator.pushNamed].
 class AppRoutes {

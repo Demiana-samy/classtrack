@@ -1,6 +1,5 @@
 import '../../../../core/constants/app_constants.dart';
 
-/// Domain entity representing a quiz question.
 class QuizQuestion {
   const QuizQuestion({
     required this.text,
@@ -13,13 +12,12 @@ class QuizQuestion {
   final int correctIndex;
 }
 
-/// Domain validation rules for quiz question authoring.
-/// Enforces business constraints: exactly 5 questions, 4 options per question, non-empty text, valid correctIndex.
 class QuizDraftValidator {
   static const questionCount = AppConstants.quizQuestionCount;
   static const optionCount = 4;
 
-  static bool isValid(List<QuizQuestion> questions) => validate(questions).isEmpty;
+  static bool isValid(List<QuizQuestion> questions) =>
+      validate(questions).isEmpty;
 
   static List<String> validate(List<QuizQuestion> questions) {
     final errors = <String>[];
@@ -46,5 +44,19 @@ class QuizDraftValidator {
       }
     }
     return errors;
+  }
+}
+
+class QuizScorer {
+  const QuizScorer._();
+
+  static int score(List<QuizQuestion> questions, List<int?> answers) {
+    var total = 0;
+    for (var i = 0; i < questions.length && i < answers.length; i++) {
+      if (answers[i] == questions[i].correctIndex) {
+        total++;
+      }
+    }
+    return total;
   }
 }

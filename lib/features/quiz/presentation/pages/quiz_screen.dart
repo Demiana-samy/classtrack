@@ -3,7 +3,11 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/app_strings.dart';
 import '../../../../core/widgets/primary_button.dart';
 import '../../data/models/quiz_question_model.dart';
+import '../../domain/entities/quiz_question.dart';
+import '../widgets/quiz_completed_view.dart';
+import '../widgets/quiz_feedback.dart';
 import '../widgets/quiz_progress_indicator.dart';
+import '../widgets/quiz_question_view.dart';
 
 class QuizScreen extends StatefulWidget {
   const QuizScreen({
@@ -34,23 +38,9 @@ class _QuizScreenState extends State<QuizScreen> {
     _selectedAnswers = List<int?>.filled(_questions.length, null);
   }
 
-  void _showError(String message) {
-    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        behavior: SnackBarBehavior.floating,
-        backgroundColor: AppColors.card,
-        content: Text(
-          message,
-          style: AppTextStyles.withColor(AppTextStyles.cairo14W400, AppColors.danger),
-        ),
-      ),
-    );
-  }
-
   void _handleNext() {
     if (_selectedAnswers[_currentIndex] == null) {
-      _showError(AppStrings.selectAnswerToContinue);
+      QuizFeedback.showError(context, AppStrings.selectAnswerToContinue);
       return;
     }
 
@@ -73,7 +63,7 @@ class _QuizScreenState extends State<QuizScreen> {
 
   void _handleSubmit() {
     if (_selectedAnswers[_currentIndex] == null) {
-      _showError(AppStrings.selectAnswerToContinue);
+      QuizFeedback.showError(context, AppStrings.selectAnswerToContinue);
       return;
     }
 
@@ -85,18 +75,6 @@ class _QuizScreenState extends State<QuizScreen> {
     });
   }
 
-  int _calculateScore() {
-    var score = 0;
-    for (var i = 0; i < _questions.length; i++) {
-      if (i < _selectedAnswers.length &&
-          _selectedAnswers[i] != null &&
-          _selectedAnswers[i] == _questions[i].correctIndex) {
-        score++;
-      }
-    }
-    return score;
-  }
-
   @override
   Widget build(BuildContext context) {
     if (_questions.isEmpty) {
@@ -104,7 +82,7 @@ class _QuizScreenState extends State<QuizScreen> {
         backgroundColor: AppColors.bg,
         appBar: AppBar(
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            icon: const Icon(Icons.arrow_back),
             onPressed: () => Navigator.of(context).maybePop(),
           ),
           title: const Text(AppStrings.quizTitle),
@@ -115,7 +93,10 @@ class _QuizScreenState extends State<QuizScreen> {
             child: Text(
               AppStrings.noQuestionsAvailable,
               textAlign: TextAlign.center,
-              style: AppTextStyles.withColor(AppTextStyles.cairo16W400, AppColors.muted),
+              style: AppTextStyles.withColor(
+                AppTextStyles.cairo16W400,
+                AppColors.muted,
+              ),
             ),
           ),
         ),
@@ -123,70 +104,29 @@ class _QuizScreenState extends State<QuizScreen> {
     }
 
     if (_isSubmitted) {
-      final score = _calculateScore();
+      final score = QuizScorer.score(_questions, _selectedAnswers);
       return Scaffold(
         backgroundColor: AppColors.bg,
         appBar: AppBar(
           automaticallyImplyLeading: false,
           title: const Text(AppStrings.quizTitle),
         ),
-        body: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Spacer(),
-                const Icon(
-                  Icons.check_circle_outline,
-                  size: 72,
-                  color: AppColors.success,
-                ),
-                const SizedBox(height: 18),
-                Text(
-                  AppStrings.quizCompleted,
-                  style: AppTextStyles.withColor(AppTextStyles.cairo22W600, Colors.white),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  AppStrings.quizCompletedDesc,
-                  textAlign: TextAlign.center,
-                  style: AppTextStyles.withColor(AppTextStyles.cairo16W400, AppColors.muted),
-                ),
-                const SizedBox(height: 16),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                  decoration: BoxDecoration(
-                    color: AppColors.card,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.border),
-                  ),
-                  child: Text(
-                    AppStrings.scoreOf(score, _questions.length),
-                    style: AppTextStyles.withColor(AppTextStyles.cairo18W600, AppColors.success),
-                  ),
-                ),
-                const Spacer(),
-                PrimaryButton(
-                  label: AppStrings.finish,
-                  onPressed: () => Navigator.of(context).maybePop(),
-                ),
-              ],
-            ),
-          ),
+        body: QuizCompletedView(
+          score: score,
+          total: _questions.length,
+          onFinish: () => Navigator.of(context).maybePop(),
         ),
       );
     }
 
     final currentQuestion = _questions[_currentIndex];
     final isLastQuestion = _currentIndex == _questions.length - 1;
-    final selectedOption = _selectedAnswers[_currentIndex];
 
     return Scaffold(
       backgroundColor: AppColors.bg,
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: const Icon(Icons.arrow_back),
           onPressed: _handlePrevious,
         ),
         title: const Text(AppStrings.quizTitle),
@@ -196,7 +136,10 @@ class _QuizScreenState extends State<QuizScreen> {
           children: [
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 12,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -205,95 +148,24 @@ class _QuizScreenState extends State<QuizScreen> {
                       totalCount: _questions.length,
                     ),
                     const SizedBox(height: 16),
-
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: AppColors.card,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: AppColors.border),
-                      ),
-                      child: Text(
-                        currentQuestion.text,
-                        style: AppTextStyles.withColor(AppTextStyles.cairo16W500, Colors.white)
-                            .copyWith(height: 1.4),
-                      ),
+                    QuizQuestionView(
+                      question: currentQuestion,
+                      selectedIndex: _selectedAnswers[_currentIndex],
+                      onSelected: (index) {
+                        setState(() {
+                          _selectedAnswers[_currentIndex] = index;
+                        });
+                      },
                     ),
-                    const SizedBox(height: 16),
-
-                    for (var i = 0; i < currentQuestion.options.length; i++) ...[
-                      GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            _selectedAnswers[_currentIndex] = i;
-                          });
-                        },
-                        behavior: HitTestBehavior.opaque,
-                        child: Padding(
-                          padding: const EdgeInsets.only(bottom: 12),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 24,
-                                height: 24,
-                                margin: const EdgeInsets.only(right: 12),
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                    color: selectedOption == i
-                                        ? AppColors.success
-                                        : AppColors.muted,
-                                    width: 2,
-                                  ),
-                                ),
-                                child: selectedOption == i
-                                    ? const Center(
-                                        child: Icon(
-                                          Icons.check,
-                                          size: 14,
-                                          color: AppColors.success,
-                                        ),
-                                      )
-                                    : null,
-                              ),
-
-                              Expanded(
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 16,
-                                    vertical: 14,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.card,
-                                    borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(
-                                      color: selectedOption == i
-                                          ? AppColors.success
-                                          : AppColors.border,
-                                      width: selectedOption == i ? 1.5 : 1,
-                                    ),
-                                  ),
-                                  child: Text(
-                                    currentQuestion.options[i],
-                                    style: AppTextStyles.withColor(AppTextStyles.cairo15W400, Colors.white),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
                   ],
                 ),
               ),
             ),
-
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
               child: PrimaryButton(
-                label: isLastQuestion ? AppStrings.submit : AppStrings.saveAndNext,
+                label:
+                    isLastQuestion ? AppStrings.submit : AppStrings.saveAndNext,
                 onPressed: isLastQuestion ? _handleSubmit : _handleNext,
               ),
             ),

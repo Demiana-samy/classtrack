@@ -7,7 +7,7 @@ import 'package:classtrack/features/quiz/presentation/pages/quiz_screen.dart';
 import 'package:classtrack/features/quiz/presentation/pages/role_based_quiz_screen.dart';
 import 'package:classtrack/features/auth/data/mock_users.dart';
 import 'package:classtrack/features/auth/presentation/auth_cubit.dart';
-import 'package:classtrack/features/quiz/presentation/quiz_entry_screen.dart';
+import 'package:classtrack/features/quiz/presentation/pages/quiz_entry_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -21,7 +21,8 @@ Widget _wrap(Widget child, {AuthCubit? auth}) {
 
 void main() {
   group('RoleBasedQuizScreen', () {
-    testWidgets('displays QuizBuildScreen when role is teacher', (tester) async {
+    testWidgets('displays QuizBuildScreen when role is teacher',
+        (tester) async {
       await tester.pumpWidget(
         _wrap(
           const RoleBasedQuizScreen(
@@ -52,7 +53,8 @@ void main() {
   });
 
   group('Teacher QuizBuildScreen', () {
-    testWidgets('validates empty inputs and preserves data across navigation', (tester) async {
+    testWidgets('validates empty inputs and preserves data across navigation',
+        (tester) async {
       await tester.pumpWidget(_wrap(const QuizBuildScreen()));
       await tester.pumpAndSettle();
 
@@ -108,7 +110,9 @@ void main() {
       expect(find.byIcon(Icons.check), findsOneWidget);
     });
 
-    testWidgets('shows Create Quiz on Question 5 and handles completion locally', (tester) async {
+    testWidgets(
+        'shows Create Quiz on Question 5 and handles completion locally',
+        (tester) async {
       await tester.pumpWidget(_wrap(const QuizBuildScreen()));
       await tester.pumpAndSettle();
 
@@ -155,7 +159,8 @@ void main() {
       expect(find.text(AppStrings.noQuestionsAvailable), findsOneWidget);
     });
 
-    testWidgets('allows answering questions and shows local score upon submit', (tester) async {
+    testWidgets('allows answering questions and shows local score upon submit',
+        (tester) async {
       await tester.pumpWidget(
         _wrap(
           const QuizScreen(
@@ -172,7 +177,8 @@ void main() {
       await tester.tap(find.text(AppStrings.saveAndNext));
       await tester.pump();
       expect(find.text(AppStrings.selectAnswerToContinue), findsOneWidget);
-      ScaffoldMessenger.of(tester.element(find.byType(QuizScreen))).clearSnackBars();
+      ScaffoldMessenger.of(tester.element(find.byType(QuizScreen)))
+          .clearSnackBars();
       await tester.pumpAndSettle();
 
       // Select 'Global Positioning System'
@@ -223,7 +229,9 @@ void main() {
   });
 
   group('QuizEntryScreen', () {
-    testWidgets('teacher user sees Teacher Quiz Builder and continues with Class ID', (tester) async {
+    testWidgets(
+        'teacher user sees Teacher Quiz Builder and continues with Class ID',
+        (tester) async {
       final auth = AuthCubit.preview(user: mockTeacherSara);
       await tester.pumpWidget(_wrap(const QuizEntryScreen(), auth: auth));
       await tester.pumpAndSettle();
@@ -247,7 +255,8 @@ void main() {
       expect(find.text('Question 1 of 5'), findsOneWidget);
     });
 
-    testWidgets('student user sees Student Quiz and continues with Session ID', (tester) async {
+    testWidgets('student user sees Student Quiz and continues with Session ID',
+        (tester) async {
       final auth = AuthCubit.preview(user: mockStudentMohamed);
       await tester.pumpWidget(_wrap(const QuizEntryScreen(), auth: auth));
       await tester.pumpAndSettle();
@@ -270,7 +279,8 @@ void main() {
       expect(find.text(AppStrings.quizTitle), findsOneWidget);
     });
 
-    testWidgets('unauthenticated user sees role toggle and can choose role', (tester) async {
+    testWidgets('unauthenticated user sees role toggle and can choose role',
+        (tester) async {
       final auth = AuthCubit.preview();
       await tester.pumpWidget(_wrap(const QuizEntryScreen(), auth: auth));
       await tester.pumpAndSettle();

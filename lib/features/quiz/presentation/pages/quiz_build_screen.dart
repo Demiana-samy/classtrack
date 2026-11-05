@@ -5,9 +5,8 @@ import '../../../../core/utils/app_strings.dart';
 import '../../../../core/widgets/primary_button.dart';
 import '../../data/models/quiz_question_model.dart';
 import '../../domain/entities/quiz_question.dart';
-import '../widgets/answer_option_field.dart';
-import '../widgets/question_input_field.dart';
-import '../widgets/quiz_progress_indicator.dart';
+import '../widgets/quiz_builder_question_view.dart';
+import '../widgets/quiz_feedback.dart';
 
 class _QuestionDraftState {
   _QuestionDraftState()
@@ -24,8 +23,8 @@ class _QuestionDraftState {
 
   void dispose() {
     questionController.dispose();
-    for (final c in optionControllers) {
-      c.dispose();
+    for (final controller in optionControllers) {
+      controller.dispose();
     }
   }
 
@@ -55,7 +54,6 @@ class _QuizBuildScreenState extends State<QuizBuildScreen> {
 
   late final List<_QuestionDraftState> _questions;
   int _currentIndex = 0;
-  final _formKey = GlobalKey<FormState>();
 
   @override
   void initState() {
@@ -65,8 +63,8 @@ class _QuizBuildScreenState extends State<QuizBuildScreen> {
 
   @override
   void dispose() {
-    for (final q in _questions) {
-      q.dispose();
+    for (final question in _questions) {
+      question.dispose();
     }
     super.dispose();
   }
@@ -76,41 +74,30 @@ class _QuizBuildScreenState extends State<QuizBuildScreen> {
     final questionText = current.questionController.text.trim();
 
     if (questionText.isEmpty) {
-      _showError(AppStrings.emptyQuestionError);
+      QuizFeedback.showError(context, AppStrings.emptyQuestionError);
       return false;
     }
 
-    for (var i = 0; i < current.optionControllers.length; i++) {
-      if (current.optionControllers[i].text.trim().isEmpty) {
-        _showError(AppStrings.emptyOptionError);
+    for (final controller in current.optionControllers) {
+      if (controller.text.trim().isEmpty) {
+        QuizFeedback.showError(context, AppStrings.emptyOptionError);
         return false;
       }
     }
 
-    if (current.correctIndex < 0 || current.correctIndex >= current.optionControllers.length) {
-      _showError(AppStrings.noCorrectOptionError);
+    if (current.correctIndex < 0 ||
+        current.correctIndex >= current.optionControllers.length) {
+      QuizFeedback.showError(context, AppStrings.noCorrectOptionError);
       return false;
     }
 
     return true;
   }
 
-  void _showError(String message) {
-    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        behavior: SnackBarBehavior.floating,
-        backgroundColor: AppColors.card,
-        content: Text(
-          message,
-          style: AppTextStyles.withColor(AppTextStyles.cairo14W400, AppColors.danger),
-        ),
-      ),
-    );
-  }
-
   void _handleNext() {
-    if (!_validateCurrentQuestion()) return;
+    if (!_validateCurrentQuestion()) {
+      return;
+    }
 
     if (_currentIndex < _totalQuestions - 1) {
       setState(() {
@@ -130,56 +117,23 @@ class _QuizBuildScreenState extends State<QuizBuildScreen> {
   }
 
   void _handleCreateQuiz() {
-    if (!_validateCurrentQuestion()) return;
-
-    final drafts = _questions.map((q) => q.toDraft()).toList();
-    final validationErrors = QuizDraftValidator.validate(drafts);
-
-    if (validationErrors.isNotEmpty) {
-      _showError(validationErrors.first);
+    if (!_validateCurrentQuestion()) {
       return;
     }
 
-    // Local UI confirmation
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        backgroundColor: AppColors.card,
-        content: Text(
-          AppStrings.quizCreatedSuccess,
-          style: AppTextStyles.withColor(AppTextStyles.cairo14W400, AppColors.success),
-        ),
-      ),
-    );
+    final drafts = _questions.map((question) => question.toDraft()).toList();
+    final validationErrors = QuizDraftValidator.validate(drafts);
 
+    if (validationErrors.isNotEmpty) {
+      QuizFeedback.showError(context, validationErrors.first);
+      return;
+    }
+
+    QuizFeedback.showSuccess(context, AppStrings.quizCreatedSuccess);
     widget.onQuizCreated?.call(drafts);
-
-    showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.card,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text(
-          AppStrings.quizCreatedTitle,
-          style: AppTextStyles.withColor(AppTextStyles.cairo20W600, Colors.white),
-        ),
-        content: Text(
-          AppStrings.quizCreatedMessage,
-          style: AppTextStyles.withColor(AppTextStyles.cairo14W400, AppColors.muted),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(ctx).pop();
-              Navigator.of(context).pop(drafts);
-            },
-            child: Text(
-              AppStrings.finish,
-              style: AppTextStyles.withColor(AppTextStyles.cairo14W600, AppColors.primary),
-            ),
-          ),
-        ],
-      ),
+    QuizFeedback.showCreatedDialog(
+      context,
+      () => Navigator.of(context).pop(drafts),
     );
   }
 
@@ -188,75 +142,52 @@ class _QuizBuildScreenState extends State<QuizBuildScreen> {
     final currentQuestion = _questions[_currentIndex];
     final isLastQuestion = _currentIndex == _totalQuestions - 1;
 
-    final optionLabels = [
-      AppStrings.optionA,
-      AppStrings.optionB,
-      AppStrings.optionC,
-      AppStrings.optionD,
-    ];
-
     return Scaffold(
       backgroundColor: AppColors.bg,
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: const Icon(Icons.arrow_back),
           onPressed: _handlePrevious,
         ),
         title: const Text(AppStrings.quizBuilderTitle),
       ),
       body: SafeArea(
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Progress indicator with 5 segments and dynamic question label
-                      QuizProgressIndicator(
-                        currentIndex: _currentIndex,
-                        totalCount: _totalQuestions,
-                      ),
-                      const SizedBox(height: 16),
-
-                      // Question input field
-                      QuestionInputField(
-                        controller: currentQuestion.questionController,
-                      ),
-                      const SizedBox(height: 16),
-
-                      // Four answer options
-                      for (var i = 0; i < QuizDraftValidator.optionCount; i++)
-                        AnswerOptionField(
-                          controller: currentQuestion.optionControllers[i],
-                          hintText: optionLabels[i],
-                          isSelected: currentQuestion.correctIndex == i,
-                          onSelect: () {
-                            setState(() {
-                              currentQuestion.correctIndex = i;
-                            });
-                          },
-                        ),
-                    ],
-                  ),
+        child: Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 12,
+                ),
+                child: QuizBuilderQuestionView(
+                  questionController: currentQuestion.questionController,
+                  optionControllers: currentQuestion.optionControllers,
+                  correctIndex: currentQuestion.correctIndex,
+                  currentIndex: _currentIndex,
+                  totalCount: _totalQuestions,
+                  onSelectOption: (index) {
+                    setState(() {
+                      currentQuestion.correctIndex = index;
+                    });
+                  },
                 ),
               ),
-
-              // Bottom action button: "Save and next" or "Create Quiz"
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
-                child: PrimaryButton(
-                  label: isLastQuestion ? AppStrings.createQuiz : AppStrings.saveAndNext,
-                  onPressed: isLastQuestion ? _handleCreateQuiz : _handleNext,
-                ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+              child: PrimaryButton(
+                label: isLastQuestion
+                    ? AppStrings.createQuiz
+                    : AppStrings.saveAndNext,
+                onPressed: isLastQuestion ? _handleCreateQuiz : _handleNext,
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
 }
+
+typedef QuizBuilderScreen = QuizBuildScreen;

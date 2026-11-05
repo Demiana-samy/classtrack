@@ -10,7 +10,6 @@ class QuizProgressIndicator extends StatelessWidget {
     this.totalCount = AppConstants.quizQuestionCount,
   });
 
-  /// Zero-based index of the currently displayed question (0..totalCount - 1).
   final int currentIndex;
   final int totalCount;
 
@@ -20,7 +19,6 @@ class QuizProgressIndicator extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        // 5 small progress segments
         Row(
           children: List.generate(totalCount, (index) {
             Color segmentColor;
@@ -47,10 +45,10 @@ class QuizProgressIndicator extends StatelessWidget {
           }),
         ),
         const SizedBox(height: 12),
-        // Dynamic Question label e.g. "Question 2 of 5"
         Text(
           AppStrings.questionOf(currentIndex + 1, totalCount),
-          style: AppTextStyles.withColor(AppTextStyles.cairo15W500, AppColors.muted),
+          style: AppTextStyles.withColor(
+              AppTextStyles.cairo15W500, AppColors.muted),
         ),
       ],
     );

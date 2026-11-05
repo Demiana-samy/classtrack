@@ -1,19 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../core/constants/app_constants.dart';
-import '../../../core/theme/app_theme.dart';
-import '../../../core/utils/app_strings.dart';
-import '../../../core/widgets/app_logo.dart';
-import '../../../core/widgets/app_text_field.dart';
-import '../../../core/widgets/primary_button.dart';
-import '../../auth/presentation/auth_cubit.dart';
-import '../../auth/presentation/login_screen.dart';
-import 'quiz_builder_screen.dart';
+import '../../../../core/constants/app_constants.dart';
+import '../../../../core/theme/app_theme.dart';
+import '../../../../core/utils/app_strings.dart';
+import '../../../../core/widgets/app_text_field.dart';
+import '../../../../core/widgets/primary_button.dart';
+import '../../../auth/presentation/auth_cubit.dart';
+import '../../../auth/presentation/login_screen.dart';
+import '../widgets/quiz_entry_header.dart';
+import '../widgets/quiz_role_selector.dart';
+import 'quiz_build_screen.dart';
 import 'quiz_screen.dart';
 
-/// Entry screen that serves as the app's initial landing page.
-/// Dynamically routes to QuizBuilderScreen (teacher) or QuizScreen (student)
-/// while properly collecting required classId or sessionId.
 class QuizEntryScreen extends StatefulWidget {
   const QuizEntryScreen({super.key});
 
@@ -24,8 +22,6 @@ class QuizEntryScreen extends StatefulWidget {
 class _QuizEntryScreenState extends State<QuizEntryScreen> {
   final _idController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-
-  // Fallback role selection when not authenticated
   String _selectedRole = Roles.teacher;
 
   @override
@@ -50,7 +46,7 @@ class _QuizEntryScreenState extends State<QuizEntryScreen> {
     if (isTeacher) {
       Navigator.of(context).push(
         MaterialPageRoute(
-          builder: (_) => QuizBuilderScreen(classId: id),
+          builder: (_) => QuizBuildScreen(classId: id),
         ),
       );
     } else {
@@ -66,9 +62,8 @@ class _QuizEntryScreenState extends State<QuizEntryScreen> {
   Widget build(BuildContext context) {
     final authState = context.watch<AuthCubit>().state;
     final user = authState.user;
-
-    // Use authenticated role if logged in; otherwise use the local toggle
-    final isTeacher = user != null ? user.isTeacher : (_selectedRole == Roles.teacher);
+    final isTeacher =
+        user != null ? user.isTeacher : (_selectedRole == Roles.teacher);
 
     return Scaffold(
       backgroundColor: AppColors.bg,
@@ -90,7 +85,10 @@ class _QuizEntryScreenState extends State<QuizEntryScreen> {
               },
               child: Text(
                 AppStrings.signIn,
-                style: AppTextStyles.withColor(AppTextStyles.cairo14W600, AppColors.primary),
+                style: AppTextStyles.withColor(
+                  AppTextStyles.cairo14W600,
+                  AppColors.primary,
+                ),
               ),
             ),
         ],
@@ -105,60 +103,26 @@ class _QuizEntryScreenState extends State<QuizEntryScreen> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const AppLogo(size: 72),
-                  const SizedBox(height: 16),
-                  Text(
-                    isTeacher ? AppStrings.teacherQuizBuilder : AppStrings.studentQuiz,
-                    textAlign: TextAlign.center,
-                    style: AppTextStyles.withColor(AppTextStyles.cairo22W700, Colors.white),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    user != null
-                        ? AppStrings.loggedInAs(user.name, user.role)
-                        : AppStrings.selectRolePrompt,
-                    textAlign: TextAlign.center,
-                    style: AppTextStyles.withColor(AppTextStyles.cairo14W400, AppColors.muted),
-                  ),
+                  QuizEntryHeader(isTeacher: isTeacher, user: user),
                   const SizedBox(height: 24),
-
-                  // If user is not logged in, allow choosing Teacher or Student
                   if (user == null) ...[
-                    SegmentedButton<String>(
-                      segments: const [
-                        ButtonSegment(
-                          value: Roles.teacher,
-                          label: Text(AppStrings.teacher),
-                          icon: Icon(Icons.school),
-                        ),
-                        ButtonSegment(
-                          value: Roles.student,
-                          label: Text(AppStrings.student),
-                          icon: Icon(Icons.person),
-                        ),
-                      ],
-                      selected: {_selectedRole},
-                      onSelectionChanged: (newSelection) {
+                    QuizRoleSelector(
+                      selectedRole: _selectedRole,
+                      onChanged: (role) {
                         setState(() {
-                          _selectedRole = newSelection.first;
+                          _selectedRole = role;
                           _idController.clear();
                         });
                       },
-                      style: SegmentedButton.styleFrom(
-                        backgroundColor: AppColors.card,
-                        selectedBackgroundColor: AppColors.primary,
-                        selectedForegroundColor: Colors.white,
-                      ),
                     ),
                     const SizedBox(height: 20),
                   ],
-
-                  // Input field for Class ID or Session ID
                   AppTextField(
                     controller: _idController,
-                    label: isTeacher ? AppStrings.classId : AppStrings.sessionId,
-                    validator: (v) {
-                      if (v == null || v.trim().isEmpty) {
+                    label:
+                        isTeacher ? AppStrings.classId : AppStrings.sessionId,
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
                         return isTeacher
                             ? AppStrings.enterValidClassId
                             : AppStrings.enterValidSessionId;
@@ -167,10 +131,10 @@ class _QuizEntryScreenState extends State<QuizEntryScreen> {
                     },
                   ),
                   const SizedBox(height: 20),
-
-                  // Continue button using shared PrimaryButton
                   PrimaryButton(
-                    label: isTeacher ? AppStrings.openQuizBuilder : AppStrings.takeQuiz,
+                    label: isTeacher
+                        ? AppStrings.openQuizBuilder
+                        : AppStrings.takeQuiz,
                     onPressed: () => _continue(isTeacher),
                   ),
                   const SizedBox(height: 10),
@@ -180,7 +144,10 @@ class _QuizEntryScreenState extends State<QuizEntryScreen> {
                       isTeacher
                           ? AppStrings.buildQuizDirectly
                           : AppStrings.openQuizDirectly,
-                      style: AppTextStyles.withColor(AppTextStyles.cairo13W400, AppColors.muted),
+                      style: AppTextStyles.withColor(
+                        AppTextStyles.cairo13W400,
+                        AppColors.muted,
+                      ),
                     ),
                   ),
                 ],

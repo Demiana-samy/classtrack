@@ -5,13 +5,8 @@ import 'app_routes.dart';
 
 export 'app_routes.dart';
 
-/// The navigator used by the app. Auth changes are applied through this key.
 final GlobalKey<NavigatorState> appNavigatorKey = GlobalKey<NavigatorState>();
 
-/// Keeps the visible screen in sync with the authentication state.
-///
-/// The flow is unchanged:
-/// unknown/failed -> splash, unauthenticated -> login, authenticated -> role home.
 void syncAuthRoute(AuthState state) {
   final navigator = appNavigatorKey.currentState;
   if (navigator == null) return;

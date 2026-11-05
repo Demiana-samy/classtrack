@@ -23,13 +23,13 @@ class AnswerOptionField extends StatelessWidget {
   Widget build(BuildContext context) {
     const activeColor = AppColors.success;
     const inactiveBorderColor = AppColors.border;
+    final onSurface = Theme.of(context).colorScheme.onSurface;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // Radio / check selection control
           GestureDetector(
             onTap: onSelect,
             behavior: HitTestBehavior.opaque,
@@ -55,20 +55,23 @@ class AnswerOptionField extends StatelessWidget {
                   : null,
             ),
           ),
-
-          // Option text input field
           Expanded(
             child: TextFormField(
               controller: controller,
               onChanged: onChanged,
               validator: validator,
-              style: AppTextStyles.withColor(AppTextStyles.cairo15W400, Colors.white),
+              style: AppTextStyles.withColor(
+                AppTextStyles.cairo15W400,
+                onSurface,
+              ),
               decoration: InputDecoration(
                 hintText: hintText,
-                hintStyle: AppTextStyles.withColor(AppTextStyles.cairo15W400, AppColors.muted),
+                hintStyle: AppTextStyles.withColor(
+                    AppTextStyles.cairo15W400, AppColors.muted),
                 filled: true,
                 fillColor: AppColors.card,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide(
@@ -96,7 +99,8 @@ class AnswerOptionField extends StatelessWidget {
                 ),
                 focusedErrorBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: AppColors.danger, width: 1.5),
+                  borderSide:
+                      const BorderSide(color: AppColors.danger, width: 1.5),
                 ),
               ),
             ),
