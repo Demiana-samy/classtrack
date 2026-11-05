@@ -1,6 +1,5 @@
-import 'quiz_question_draft.dart';
+import 'models/quiz_question_model.dart';
 
-/// Sample 5-question quiz for UI work without Firebase.
 const mockQuizQuestions = <QuizQuestionDraft>[
   QuizQuestionDraft(
     text: 'What does GPS stand for?',
@@ -29,7 +28,12 @@ const mockQuizQuestions = <QuizQuestionDraft>[
   ),
   QuizQuestionDraft(
     text: 'Who computes the quiz score?',
-    options: ['The student phone', 'The teacher phone', 'Cloud Functions', 'Firestore rules'],
+    options: [
+      'The student phone',
+      'The teacher phone',
+      'Cloud Functions',
+      'Firestore rules'
+    ],
     correctIndex: 2,
   ),
   QuizQuestionDraft(

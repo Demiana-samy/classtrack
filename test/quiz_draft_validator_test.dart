@@ -1,4 +1,5 @@
-import 'package:classtrack/features/quiz/data/quiz_question_draft.dart';
+import 'package:classtrack/features/quiz/data/models/quiz_question_model.dart';
+import 'package:classtrack/features/quiz/domain/entities/quiz_question.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 QuizQuestionDraft _q({

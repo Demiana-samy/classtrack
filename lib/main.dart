@@ -2,7 +2,6 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 import 'core/di/injection.dart';
 import 'core/error/error_messages.dart';
 import 'core/router/app_router.dart';
@@ -10,16 +9,13 @@ import 'core/theme/app_theme.dart';
 import 'core/widgets/app_logo.dart';
 import 'core/widgets/error_view.dart';
 import 'features/auth/presentation/auth_cubit.dart';
-import 'features/auth/presentation/login_screen.dart';
-import 'features/auth/presentation/register_screen.dart';
-import 'features/auth/presentation/splash_screen.dart';
-import 'features/common/design_preview/design_preview_screen.dart';
 import 'firebase_options.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   try {
-    await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+    await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform);
     setupDi();
     final auth = sl<AuthCubit>()..start();
     runApp(ClassTrackApp(auth: auth));
@@ -28,21 +24,41 @@ Future<void> main() async {
   }
 }
 
-class ClassTrackApp extends StatelessWidget {
-  ClassTrackApp({super.key, required this.auth}) : _router = buildRouter(auth);
+class ClassTrackApp extends StatefulWidget {
+  const ClassTrackApp({super.key, required this.auth});
 
   final AuthCubit auth;
-  final GoRouter _router;
+
+  @override
+  State<ClassTrackApp> createState() => _ClassTrackAppState();
+}
+
+class _ClassTrackAppState extends State<ClassTrackApp> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) syncAuthRoute(widget.auth.state);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider.value(
-      value: auth,
-      child: MaterialApp.router(
-        title: 'ClassTrack',
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.dark,
-        routerConfig: _router,
+      value: widget.auth,
+      child: BlocListener<AuthCubit, AuthState>(
+        listenWhen: (previous, current) =>
+            previous.status != current.status || previous.user != current.user,
+        listener: (context, state) => syncAuthRoute(state),
+        child: MaterialApp(
+          navigatorKey: appNavigatorKey,
+          title: 'ClassTrack',
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.dark,
+          initialRoute: AppRoutes.splash,
+          routes: AppRoutes.routes,
+          onGenerateRoute: AppRoutes.onGenerateRoute,
+        ),
       ),
     );
   }
@@ -94,22 +110,15 @@ class DesignPreviewApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final router = GoRouter(
-      initialLocation: '/design-preview',
-      routes: [
-        GoRoute(path: AppRoutes.designPreview, builder: (_, __) => const DesignPreviewScreen()),
-        GoRoute(path: AppRoutes.login, builder: (_, __) => const LoginScreen()),
-        GoRoute(path: AppRoutes.register, builder: (_, __) => const RegisterScreen()),
-        GoRoute(path: AppRoutes.splash, builder: (_, __) => const SplashScreen()),
-      ],
-    );
     return BlocProvider(
       create: (_) => AuthCubit.preview(),
-      child: MaterialApp.router(
+      child: MaterialApp(
         title: 'ClassTrack Design Preview',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.dark,
-        routerConfig: router,
+        initialRoute: AppRoutes.designPreview,
+        routes: AppRoutes.routes,
+        onGenerateRoute: AppRoutes.onGenerateRoute,
       ),
     );
   }
