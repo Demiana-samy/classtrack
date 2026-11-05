@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import '../../../core/constants/app_constants.dart';
-import '../../quiz/data/quiz_question_draft.dart';
+import '../../quiz/data/models/quiz_question_model.dart';
 
 class SessionRepository {
   SessionRepository(this._db, this._functions);

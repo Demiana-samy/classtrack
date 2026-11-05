@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/app_strings.dart';
 import '../../../../core/widgets/primary_button.dart';
-import '../../data/quiz_question_draft.dart';
+import '../../data/models/quiz_question_model.dart';
 import '../widgets/quiz_progress_indicator.dart';
 
 class QuizScreen extends StatefulWidget {

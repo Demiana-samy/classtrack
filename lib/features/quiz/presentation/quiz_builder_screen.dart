@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'pages/quiz_build_screen.dart';
 
+export 'pages/quiz_build_screen.dart';
+
 /// #8 Quiz Builder
 ///
-/// Teacher creates a quiz with 5 questions.
+/// Compatibility wrapper delegating to [QuizBuildScreen].
 class QuizBuilderScreen extends StatelessWidget {
   const QuizBuilderScreen({super.key, this.classId});
 

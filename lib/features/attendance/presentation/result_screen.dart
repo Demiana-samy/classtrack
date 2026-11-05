@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_theme.dart';
@@ -54,14 +53,16 @@ class ResultScreen extends StatelessWidget {
               Text(
                 accepted ? 'Accepted' : 'Not accepted',
                 textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w600),
+                style:
+                    const TextStyle(fontSize: 28, fontWeight: FontWeight.w600),
               ),
               if (!accepted) ...[
                 const SizedBox(height: 8),
                 Text(
                   AttendanceReasons.message(reason),
                   textAlign: TextAlign.center,
-                  style: const TextStyle(color: AppColors.muted, fontSize: 16, height: 1.4),
+                  style: const TextStyle(
+                      color: AppColors.muted, fontSize: 16, height: 1.4),
                 ),
               ],
               if (distance != null) ...[
@@ -85,20 +86,17 @@ class ResultScreen extends StatelessWidget {
                 Text(
                   '$score/${AppConstants.quizQuestionCount}',
                   textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w600),
+                  style: const TextStyle(
+                      fontSize: 32, fontWeight: FontWeight.w600),
                 ),
               ],
               const Spacer(),
               PrimaryButton(
                 label: 'Back to home',
-                onPressed: () {
-                  final router = GoRouter.maybeOf(context);
-                  if (router != null) {
-                    router.go(AppRoutes.studentHome);
-                  } else {
-                    Navigator.of(context).maybePop();
-                  }
-                },
+                onPressed: () => Navigator.of(context).pushNamedAndRemoveUntil(
+                  AppRoutes.studentHome,
+                  (route) => false,
+                ),
               ),
             ],
           ),
@@ -133,7 +131,8 @@ class _AcceptedMark extends StatefulWidget {
   State<_AcceptedMark> createState() => _AcceptedMarkState();
 }
 
-class _AcceptedMarkState extends State<_AcceptedMark> with SingleTickerProviderStateMixin {
+class _AcceptedMarkState extends State<_AcceptedMark>
+    with SingleTickerProviderStateMixin {
   late final AnimationController _controller = AnimationController(
     vsync: this,
     duration: const Duration(milliseconds: 650),

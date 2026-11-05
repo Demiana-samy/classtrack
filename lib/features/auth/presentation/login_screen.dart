@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/app_logo.dart';
@@ -69,8 +68,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     controller: _email,
                     label: 'Email',
                     keyboardType: TextInputType.emailAddress,
-                    validator: (v) =>
-                        (v == null || !v.contains('@')) ? 'Enter a valid email' : null,
+                    validator: (v) => (v == null || !v.contains('@'))
+                        ? 'Enter a valid email'
+                        : null,
                   ),
                   const SizedBox(height: 14),
                   AppTextField(
@@ -88,18 +88,20 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 16),
                   TextButton(
-                    onPressed: () => context.go(AppRoutes.register),
+                    onPressed: () => Navigator.of(context)
+                        .pushReplacementNamed(AppRoutes.register),
                     child: const Text('New here? Create account'),
                   ),
                   if (kDebugMode) ...[
                     const SizedBox(height: 8),
                     TextButton(
-                      onPressed: () => context.push(AppRoutes.designPreview),
+                      onPressed: () => Navigator.of(context)
+                          .pushNamed(AppRoutes.designPreview),
                       child: const Text(
                         'Design Preview',
                         style: TextStyle(color: AppColors.muted, fontSize: 12),
                       ),
-                    ),                                                                                                                                
+                    ),
                   ],
                 ],
               ),

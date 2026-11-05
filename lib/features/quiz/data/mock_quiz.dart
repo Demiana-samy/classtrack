@@ -1,4 +1,4 @@
-import 'quiz_question_draft.dart';
+import 'models/quiz_question_model.dart';
 
 /// Sample 5-question quiz for UI work without Firebase.
 const mockQuizQuestions = <QuizQuestionDraft>[

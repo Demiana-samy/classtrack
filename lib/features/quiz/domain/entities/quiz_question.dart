@@ -1,9 +1,8 @@
-import '../../../core/constants/app_constants.dart';
+import '../../../../core/constants/app_constants.dart';
 
-/// Teacher-authored quiz question. Payload matches `startSession` in functions/index.js:
-/// `{ text, options[4], correctIndex }`.
-class QuizQuestionDraft {
-  const QuizQuestionDraft({
+/// Domain entity representing a quiz question.
+class QuizQuestion {
+  const QuizQuestion({
     required this.text,
     required this.options,
     required this.correctIndex,
@@ -12,22 +11,17 @@ class QuizQuestionDraft {
   final String text;
   final List<String> options;
   final int correctIndex;
-
-  Map<String, dynamic> toMap() => {
-        'text': text,
-        'options': options,
-        'correctIndex': correctIndex,
-      };
 }
 
-/// Quiz Builder (#8) must return exactly 5 valid [QuizQuestionDraft] items.
+/// Domain validation rules for quiz question authoring.
+/// Enforces business constraints: exactly 5 questions, 4 options per question, non-empty text, valid correctIndex.
 class QuizDraftValidator {
   static const questionCount = AppConstants.quizQuestionCount;
   static const optionCount = 4;
 
-  static bool isValid(List<QuizQuestionDraft> questions) => validate(questions).isEmpty;
+  static bool isValid(List<QuizQuestion> questions) => validate(questions).isEmpty;
 
-  static List<String> validate(List<QuizQuestionDraft> questions) {
+  static List<String> validate(List<QuizQuestion> questions) {
     final errors = <String>[];
     if (questions.length != questionCount) {
       errors.add('Quiz needs exactly $questionCount questions');

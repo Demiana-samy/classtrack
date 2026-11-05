@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../auth/presentation/auth_cubit.dart';
-import '../../data/quiz_question_draft.dart';
+import '../../data/models/quiz_question_model.dart';
 import 'quiz_build_screen.dart';
 import 'quiz_screen.dart';
 

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../common/todo_screen.dart';
-import '../../quiz/data/quiz_question_draft.dart';
+import '../../quiz/data/models/quiz_question_model.dart';
 
 /// #7 Start Session — owner: Leader
 ///

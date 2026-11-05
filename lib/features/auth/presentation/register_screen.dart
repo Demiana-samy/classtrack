@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_theme.dart';
@@ -56,7 +55,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
       ),
       builder: (context, state) => Scaffold(
         appBar: AppBar(
-          leading: BackButton(onPressed: () => context.go(AppRoutes.login)),
+          leading: BackButton(
+            onPressed: () =>
+                Navigator.of(context).pushReplacementNamed(AppRoutes.login),
+          ),
         ),
         body: SafeArea(
           child: Padding(
@@ -78,23 +80,27 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   AppTextField(
                     controller: _name,
                     label: 'Full name',
-                    validator: (v) => (v == null || v.trim().isEmpty) ? 'Enter your name' : null,
+                    validator: (v) => (v == null || v.trim().isEmpty)
+                        ? 'Enter your name'
+                        : null,
                   ),
                   const SizedBox(height: 14),
                   AppTextField(
                     controller: _email,
                     label: 'Email',
                     keyboardType: TextInputType.emailAddress,
-                    validator: (v) =>
-                        (v == null || !v.contains('@')) ? 'Enter a valid email' : null,
+                    validator: (v) => (v == null || !v.contains('@'))
+                        ? 'Enter a valid email'
+                        : null,
                   ),
                   if (_role == Roles.student) ...[
                     const SizedBox(height: 14),
                     AppTextField(
                       controller: _studentId,
                       label: 'Student ID',
-                      validator: (v) =>
-                          (v == null || v.trim().isEmpty) ? 'Enter your student ID' : null,
+                      validator: (v) => (v == null || v.trim().isEmpty)
+                          ? 'Enter your student ID'
+                          : null,
                     ),
                   ],
                   const SizedBox(height: 14),
