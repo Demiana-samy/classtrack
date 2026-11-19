@@ -23,6 +23,7 @@ class ActiveSessionState extends Equatable {
     this.isSubmitting = false,
     this.isLoadingQuiz = false,
     this.message,
+    this.settingsProblem,
     this.result,
     this.quizQuestions,
     this.quizRequest = 0,
@@ -40,6 +41,9 @@ class ActiveSessionState extends Equatable {
 
   /// Inline problem shown on this screen (GPS off, network error...).
   final String? message;
+
+  /// GPS off or permission blocked: the screen shows an "Open settings" button.
+  final LocationProblem? settingsProblem;
 
   /// Answer from submitAttendance. The screen navigates to Result (#15) on it.
   final AttendanceResult? result;
@@ -61,6 +65,7 @@ class ActiveSessionState extends Equatable {
     bool? isSubmitting,
     bool? isLoadingQuiz,
     String? Function()? message,
+    LocationProblem? Function()? settingsProblem,
     AttendanceResult? result,
     List<QuizQuestionDraft>? quizQuestions,
     int? quizRequest,
@@ -73,6 +78,7 @@ class ActiveSessionState extends Equatable {
       isSubmitting: isSubmitting ?? this.isSubmitting,
       isLoadingQuiz: isLoadingQuiz ?? this.isLoadingQuiz,
       message: message != null ? message() : this.message,
+      settingsProblem: settingsProblem != null ? settingsProblem() : this.settingsProblem,
       result: result ?? this.result,
       quizQuestions: quizQuestions ?? this.quizQuestions,
       quizRequest: quizRequest ?? this.quizRequest,
@@ -88,6 +94,7 @@ class ActiveSessionState extends Equatable {
         isSubmitting,
         isLoadingQuiz,
         message,
+        settingsProblem,
         result,
         quizQuestions,
         quizRequest,
@@ -189,6 +196,12 @@ class ActiveSessionCubit extends Cubit<ActiveSessionState> {
     }
   }
 
+  Future<void> openLocationSettings() async {
+    final problem = state.settingsProblem;
+    if (problem == null || _isPreview) return;
+    await _location!.openSettings(problem);
+  }
+
   /// Mode 1: single tap.
   Future<void> punchIn() => _submit();
 
@@ -235,7 +248,11 @@ class ActiveSessionCubit extends Cubit<ActiveSessionState> {
       emit(state.copyWith(message: () => 'This session has ended.'));
       return;
     }
-    emit(state.copyWith(isSubmitting: true, message: () => null));
+    emit(state.copyWith(
+      isSubmitting: true,
+      message: () => null,
+      settingsProblem: () => null,
+    ));
 
     if (_isPreview) {
       emit(state.copyWith(
@@ -261,7 +278,11 @@ class ActiveSessionCubit extends Cubit<ActiveSessionState> {
       );
       emit(state.copyWith(isSubmitting: false, result: result));
     } on LocationException catch (e) {
-      emit(state.copyWith(isSubmitting: false, message: () => e.message));
+      emit(state.copyWith(
+        isSubmitting: false,
+        message: () => e.message,
+        settingsProblem: () => e.needsSettings ? e.problem : null,
+      ));
     } on FirebaseFunctionsException catch (e) {
       emit(state.copyWith(
         isSubmitting: false,

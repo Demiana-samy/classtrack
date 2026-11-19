@@ -20,6 +20,7 @@ class StartSessionState extends Equatable {
     this.longitude,
     this.accuracy,
     this.locationError,
+    this.settingsProblem,
     this.isStarting = false,
     this.error,
     this.sessionId,
@@ -33,6 +34,9 @@ class StartSessionState extends Equatable {
   final double? longitude;
   final double? accuracy;
   final String? locationError;
+
+  /// Set when GPS is off or permission is blocked; the screen offers "Open settings".
+  final LocationProblem? settingsProblem;
   final bool isStarting;
   final String? error;
 
@@ -56,6 +60,7 @@ class StartSessionState extends Equatable {
     double? longitude,
     double? accuracy,
     String? Function()? locationError,
+    LocationProblem? Function()? settingsProblem,
     bool? isStarting,
     String? Function()? error,
     String? sessionId,
@@ -69,6 +74,7 @@ class StartSessionState extends Equatable {
       longitude: longitude ?? this.longitude,
       accuracy: accuracy ?? this.accuracy,
       locationError: locationError != null ? locationError() : this.locationError,
+      settingsProblem: settingsProblem != null ? settingsProblem() : this.settingsProblem,
       isStarting: isStarting ?? this.isStarting,
       error: error != null ? error() : this.error,
       sessionId: sessionId ?? this.sessionId,
@@ -85,6 +91,7 @@ class StartSessionState extends Equatable {
         longitude,
         accuracy,
         locationError,
+        settingsProblem,
         isStarting,
         error,
         sessionId,
@@ -141,6 +148,7 @@ class StartSessionCubit extends Cubit<StartSessionState> {
     emit(state.copyWith(
       locationStatus: LocationStatus.loading,
       locationError: () => null,
+      settingsProblem: () => null,
     ));
     if (_isPreview) {
       emit(state.copyWith(
@@ -163,6 +171,7 @@ class StartSessionCubit extends Cubit<StartSessionState> {
       emit(state.copyWith(
         locationStatus: LocationStatus.error,
         locationError: () => e.message,
+        settingsProblem: () => e.needsSettings ? e.problem : null,
       ));
     } catch (_) {
       emit(state.copyWith(
@@ -170,6 +179,13 @@ class StartSessionCubit extends Cubit<StartSessionState> {
         locationError: () => 'Could not read your location. Try again.',
       ));
     }
+  }
+
+  /// Opens system settings, then re-reads the location when the user comes back.
+  Future<void> openLocationSettings() async {
+    final problem = state.settingsProblem;
+    if (problem == null || _isPreview) return;
+    await _location!.openSettings(problem);
   }
 
   Future<void> start() async {
@@ -217,6 +233,7 @@ class StartSessionCubit extends Cubit<StartSessionState> {
         isStarting: false,
         locationStatus: LocationStatus.error,
         locationError: () => e.message,
+        settingsProblem: () => e.needsSettings ? e.problem : null,
         error: () => e.message,
       ));
     } on FirebaseFunctionsException catch (e) {

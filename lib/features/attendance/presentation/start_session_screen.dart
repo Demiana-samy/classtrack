@@ -108,7 +108,11 @@ class _StartSessionView extends StatelessWidget {
                         ),
                       ],
                       const SizedBox(height: 20),
-                      _LocationRow(state: state, onRetry: cubit.refreshLocation),
+                      _LocationRow(
+                        state: state,
+                        onRetry: cubit.refreshLocation,
+                        onOpenSettings: cubit.openLocationSettings,
+                      ),
                       const SizedBox(height: 12),
                       const Row(
                         children: [
@@ -315,10 +319,15 @@ class _QuizCard extends StatelessWidget {
 }
 
 class _LocationRow extends StatelessWidget {
-  const _LocationRow({required this.state, required this.onRetry});
+  const _LocationRow({
+    required this.state,
+    required this.onRetry,
+    required this.onOpenSettings,
+  });
 
   final StartSessionState state;
   final VoidCallback onRetry;
+  final VoidCallback onOpenSettings;
 
   @override
   Widget build(BuildContext context) {
@@ -369,6 +378,8 @@ class _LocationRow extends StatelessWidget {
                   style: const TextStyle(color: AppColors.danger),
                 ),
               ),
+              if (state.settingsProblem != null)
+                TextButton(onPressed: onOpenSettings, child: const Text('Settings')),
               TextButton(onPressed: onRetry, child: const Text('Retry')),
             ],
           ),

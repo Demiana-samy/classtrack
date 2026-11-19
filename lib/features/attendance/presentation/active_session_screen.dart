@@ -162,7 +162,12 @@ class _ActiveSessionView extends StatelessWidget {
                   ),
                   if (state.message != null) ...[
                     const SizedBox(height: 12),
-                    _MessageCard(message: state.message!),
+                    _MessageCard(
+                      message: state.message!,
+                      onOpenSettings: state.settingsProblem != null
+                          ? cubit.openLocationSettings
+                          : null,
+                    ),
                   ],
                   const Spacer(),
                   _InfoCard(radius: session.radius),
@@ -278,9 +283,10 @@ class _InfoCard extends StatelessWidget {
 }
 
 class _MessageCard extends StatelessWidget {
-  const _MessageCard({required this.message});
+  const _MessageCard({required this.message, this.onOpenSettings});
 
   final String message;
+  final VoidCallback? onOpenSettings;
 
   @override
   Widget build(BuildContext context) {
@@ -299,6 +305,8 @@ class _MessageCard extends StatelessWidget {
           Expanded(
             child: Text(message, style: const TextStyle(color: AppColors.danger)),
           ),
+          if (onOpenSettings != null)
+            TextButton(onPressed: onOpenSettings, child: const Text('Open settings')),
         ],
       ),
     );
