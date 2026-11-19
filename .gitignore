@@ -19,6 +19,10 @@ ios/Flutter/Generated.xcconfig
 ios/Flutter/ephemeral/
 ios/Flutter/flutter_export_environment.sh
 functions/node_modules/
+firebase_tests/node_modules/
+firebase_tests/package-lock.json
+firebase-debug.log
+firestore-debug.log
 functions/.env
 .firebase/
 *.log

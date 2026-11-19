@@ -35,26 +35,16 @@ exports.startSession = onCall(async (req) => {
   const uid = req.auth.uid;
   const { classId, mode, latitude, longitude, radius, questions } = req.data || {};
 
+  if (typeof classId !== "string" || !classId) throw new HttpsError("invalid-argument", "Missing classId");
   if (!["punch_in", "quiz"].includes(mode)) throw new HttpsError("invalid-argument", "Bad mode");
   if (!isNum(latitude) || !isNum(longitude)) throw new HttpsError("invalid-argument", "Bad location");
   if (!isNum(radius) || radius < 10 || radius > 500) {
     throw new HttpsError("invalid-argument", "Radius must be 10-500 m");
   }
 
-  const cls = await db.collection("classes").doc(String(classId)).get();
+  const cls = await db.collection("classes").doc(classId).get();
   if (!cls.exists || cls.data().teacherID !== uid) {
     throw new HttpsError("permission-denied", "Not your class");
-  }
-
-  // Only one live session per class.
-  const live = await db
-    .collection("attendance_sessions")
-    .where("classID", "==", classId)
-    .where("status", "==", "active")
-    .get();
-  const now = Timestamp.now();
-  if (live.docs.some((d) => d.data().expiryTime.toMillis() > now.toMillis())) {
-    throw new HttpsError("already-exists", "A session is already running for this class");
   }
 
   if (mode === "quiz") {
@@ -71,10 +61,29 @@ exports.startSession = onCall(async (req) => {
     }
   }
 
-  const expiry = Timestamp.fromMillis(now.toMillis() + SESSION_MS);
   const ref = db.collection("attendance_sessions").doc();
-  const batch = db.batch();
-  batch.set(ref, {
+  const liveQuery = db
+    .collection("attendance_sessions")
+    .where("classID", "==", classId)
+    .where("status", "==", "active");
+
+  // Transaction: two quick taps cannot open two live sessions for one class.
+  const expiry = await db.runTransaction(async (tx) => {
+    const live = await tx.get(liveQuery);
+    const now = Timestamp.now();
+    if (live.docs.some((d) => d.data().expiryTime.toMillis() > now.toMillis())) {
+      throw new HttpsError("already-exists", "A session is already running for this class");
+    }
+    const expiryTime = Timestamp.fromMillis(now.toMillis() + SESSION_MS);
+    writeSession(tx, ref, { uid, classId, mode, latitude, longitude, radius, questions, now, expiryTime });
+    return expiryTime;
+  });
+
+  return { sessionId: ref.id, expiryTime: expiry.toMillis() };
+});
+
+function writeSession(tx, ref, { uid, classId, mode, latitude, longitude, radius, questions, now, expiryTime }) {
+  tx.set(ref, {
     classID: classId,
     teacherID: uid,
     mode,
@@ -82,28 +91,25 @@ exports.startSession = onCall(async (req) => {
     longitude,
     radius,
     startTime: now,
-    expiryTime: expiry,
+    expiryTime,
     status: "active",
   });
 
   if (mode === "quiz") {
     questions.forEach((q, i) => {
       // Students can read this (no answer inside).
-      batch.set(ref.collection("questions").doc(String(i)), {
+      tx.set(ref.collection("questions").doc(String(i)), {
         order: i,
         text: q.text.trim(),
         options: q.options.map((o) => o.trim()),
       });
     });
     // Teacher/Function only. Correct answers never reach students.
-    batch.set(ref.collection("private").doc("answers"), {
+    tx.set(ref.collection("private").doc("answers"), {
       correct: questions.map((q) => q.correctIndex),
     });
   }
-
-  await batch.commit();
-  return { sessionId: ref.id, expiryTime: expiry.toMillis() };
-});
+}
 
 // ---------------------------------------------------------------------------
 // submitAttendance (student): all four checks happen here, server side.
@@ -145,49 +151,95 @@ exports.submitAttendance = onCall(async (req) => {
     sessionID: sessionId,
     studentID: uid,
     classID: s.classID,
+    teacherID: s.teacherID, // lets firestore.rules show records only to this teacher
     timestamp: Timestamp.now(),
     latitude,
     longitude,
     distance: Math.round(distance * 10) / 10,
   };
 
-  // 5) Already attended? (one present record per student per session)
-  const existing = await recordRef.get();
-  if (existing.exists && existing.data().status === "present") return reject("already_attended");
-
-  if (distance > s.radius) {
-    // Keep a rejected record for the teacher's report. A later in-range attempt may overwrite it.
-    await recordRef.set({ ...base, status: "rejected", locationVerified: false, quizSubmitted: false });
-    return reject("out_of_range", { distance: base.distance, radius: s.radius });
-  }
-
   // Mode 2: all 5 answers required, score computed here from the private answer key.
+  // Out-of-range quiz attempts are still scored for the teacher's report
+  // (assignment example: "124 m, Submitted, 5/5, Rejected").
   let quizScore = null;
+  const answersValid = Array.isArray(answers) && answers.length === QUIZ_QUESTIONS &&
+    answers.every((a) => Number.isInteger(a) && a >= 0 && a <= 3);
   if (s.mode === "quiz") {
-    if (!Array.isArray(answers) || answers.length !== QUIZ_QUESTIONS ||
-        !answers.every((a) => Number.isInteger(a) && a >= 0 && a <= 3)) {
-      return reject("quiz_incomplete");
+    if (!answersValid && distance <= s.radius) return reject("quiz_incomplete");
+    if (answersValid) {
+      const key = await sessionRef.collection("private").doc("answers").get();
+      const correct = key.data().correct;
+      quizScore = answers.reduce((sum, a, i) => sum + (a === correct[i] ? 1 : 0), 0);
     }
-    const key = await sessionRef.collection("private").doc("answers").get();
-    const correct = key.data().correct;
-    quizScore = answers.reduce((sum, a, i) => sum + (a === correct[i] ? 1 : 0), 0);
   }
 
-  await recordRef.set({
-    ...base,
-    status: "present",
-    locationVerified: true,
-    quizSubmitted: s.mode === "quiz",
-    ...(quizScore !== null ? { quizScore } : {}),
-  });
+  // 5) Already attended? Checked and written in one transaction, so two taps
+  // at the same moment still give at most one record per student per session.
+  return db.runTransaction(async (tx) => {
+    const existing = await tx.get(recordRef);
+    if (existing.exists && existing.data().status === "present") return reject("already_attended");
 
-  return {
-    accepted: true,
-    status: "present",
-    distance: base.distance,
-    radius: s.radius,
-    ...(quizScore !== null ? { quizScore } : {}),
-  };
+    if (distance > s.radius) {
+      // Keep a rejected record for the teacher's report. A later in-range attempt may overwrite it.
+      tx.set(recordRef, {
+        ...base,
+        status: "rejected",
+        locationVerified: false,
+        quizSubmitted: s.mode === "quiz" && answersValid,
+        ...(quizScore !== null ? { quizScore } : {}),
+      });
+      return reject("out_of_range", { distance: base.distance, radius: s.radius });
+    }
+
+    tx.set(recordRef, {
+      ...base,
+      status: "present",
+      locationVerified: true,
+      quizSubmitted: s.mode === "quiz",
+      ...(quizScore !== null ? { quizScore } : {}),
+    });
+
+    return {
+      accepted: true,
+      status: "present",
+      distance: base.distance,
+      radius: s.radius,
+      ...(quizScore !== null ? { quizScore } : {}),
+    };
+  });
+});
+
+// ---------------------------------------------------------------------------
+// joinClass (student): the join code is checked here, never on the phone.
+// Clients cannot create enrollments directly (see firestore.rules).
+// ---------------------------------------------------------------------------
+exports.joinClass = onCall(async (req) => {
+  if (!req.auth) throw new HttpsError("unauthenticated", "Login required");
+  const uid = req.auth.uid;
+  const code = typeof req.data?.code === "string"
+    ? req.data.code.replace(/[^A-Za-z0-9]/g, "").toUpperCase()
+    : "";
+  if (code.length < 4) throw new HttpsError("invalid-argument", "Enter the class code");
+
+  const user = await db.collection("users").doc(uid).get();
+  if (!user.exists || user.data().role !== "student") {
+    throw new HttpsError("permission-denied", "Only students can join a class");
+  }
+
+  const found = await db.collection("classes").where("joinCode", "==", code).limit(1).get();
+  if (found.empty) throw new HttpsError("invalid-argument", "That class code is not valid.");
+  const cls = found.docs[0];
+
+  const enrollmentRef = db.collection("enrollments").doc(`${cls.id}_${uid}`);
+  const existing = await enrollmentRef.get();
+  if (!existing.exists) {
+    await enrollmentRef.set({
+      classID: cls.id,
+      studentID: uid,
+      joinedAt: Timestamp.now(),
+    });
+  }
+  return { classId: cls.id, className: cls.data().name, alreadyJoined: existing.exists };
 });
 
 // ---------------------------------------------------------------------------
