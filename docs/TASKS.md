@@ -17,12 +17,12 @@ Status: **Ready** = UI can be built against mock data and the route is registere
 | 8 | Quiz Builder | Member 3 | `features/quiz` | `lib/features/quiz/presentation/pages/quiz_build_screen.dart` | Ready |
 | 9 | Live Dashboard | Member 1 | `features/attendance` | `lib/features/attendance/presentation/live_dashboard_screen.dart` | Ready |
 | 10 | Session Results | Member 3 | `features/attendance` | `lib/features/attendance/presentation/session_results_screen.dart` | Ready |
-| 11 | Student Home | Member 2 | `features/classes` | `lib/features/classes/presentation/student_home_screen.dart` | Ready |
-| 12 | Join Class | Member 2 | `features/classes` | `lib/features/classes/presentation/join_class_screen.dart` | Ready |
+| 11 | Student Home | Member 2 | `features/classes` | `lib/features/classes/presentation/student_home_screen.dart` | Done |
+| 12 | Join Class | Member 2 | `features/classes` | `lib/features/classes/presentation/join_class_screen.dart` | Done |
 | 13 | Active Session | Leader | `features/attendance` | `lib/features/attendance/presentation/active_session_screen.dart` | Done |
-| 14 | Quiz | Member 2 | `features/quiz` | `lib/features/quiz/presentation/pages/quiz_screen.dart` | Ready |
+| 14 | Quiz | Member 2 | `features/quiz` | `lib/features/quiz/presentation/pages/quiz_screen.dart` | Done |
 | 15 | Result | Leader | `features/attendance` | `lib/features/attendance/presentation/result_screen.dart` | Done |
-| 16 | Attendance History | Member 2 | `features/attendance` | `lib/features/attendance/presentation/attendance_history_screen.dart` | Ready |
+| 16 | Attendance History | Member 2 | `features/attendance` | `lib/features/attendance/presentation/attendance_history_screen.dart` | Done |
 
 Mock data (no Firebase): `features/<name>/data/mock_*.dart`.
 
