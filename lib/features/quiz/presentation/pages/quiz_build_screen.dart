@@ -40,9 +40,13 @@ class QuizBuildScreen extends StatefulWidget {
     super.key,
     this.classId,
     this.onQuizCreated,
+    this.initialQuestions,
   });
 
   final String? classId;
+
+  /// Rebuild from Start Session: the previous 5 questions are filled in.
+  final List<QuizQuestionDraft>? initialQuestions;
   final void Function(List<QuizQuestionDraft> questions)? onQuizCreated;
 
   @override
@@ -59,6 +63,18 @@ class _QuizBuildScreenState extends State<QuizBuildScreen> {
   void initState() {
     super.initState();
     _questions = List.generate(_totalQuestions, (_) => _QuestionDraftState());
+    final initial = widget.initialQuestions;
+    if (initial != null) {
+      for (var i = 0; i < initial.length && i < _totalQuestions; i++) {
+        final q = initial[i];
+        final draft = _questions[i];
+        draft.questionController.text = q.text;
+        for (var j = 0; j < q.options.length && j < draft.optionControllers.length; j++) {
+          draft.optionControllers[j].text = q.options[j];
+        }
+        draft.correctIndex = q.correctIndex;
+      }
+    }
   }
 
   @override

@@ -6,6 +6,7 @@ import '../../../core/router/app_routes.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/primary_button.dart';
 import '../../quiz/data/models/quiz_question_model.dart';
+import '../../quiz/presentation/pages/quiz_build_screen.dart';
 import 'start_session_cubit.dart';
 
 /// #7 Start Session — owner: Leader
@@ -41,8 +42,15 @@ class _StartSessionView extends StatelessWidget {
 
   Future<void> _openQuizBuilder(BuildContext context) async {
     final cubit = context.read<StartSessionCubit>();
-    final result = await Navigator.of(context)
-        .pushNamed(AppRoutes.quizBuilder, arguments: classId);
+    final result = await Navigator.of(context).push<Object?>(
+      MaterialPageRoute(
+        settings: const RouteSettings(name: AppRoutes.quizBuilder),
+        builder: (_) => QuizBuilderScreen(
+          classId: classId,
+          initialQuestions: cubit.state.questions,
+        ),
+      ),
+    );
     if (result is List) {
       final drafts = result.whereType<QuizQuestionDraft>().toList();
       if (drafts.isNotEmpty) cubit.setQuestions(drafts);

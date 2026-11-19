@@ -4,6 +4,7 @@
  */
 const { onCall, HttpsError } = require("firebase-functions/v2/https");
 const { onSchedule } = require("firebase-functions/v2/scheduler");
+const { onDocumentUpdated } = require("firebase-functions/v2/firestore");
 const admin = require("firebase-admin");
 
 admin.initializeApp();
@@ -256,4 +257,45 @@ exports.closeExpiredSessions = onSchedule("every 1 minutes", async () => {
   const batch = db.batch();
   snap.docs.forEach((d) => batch.update(d.ref, { status: "closed" }));
   await batch.commit();
+});
+
+// ---------------------------------------------------------------------------
+// When a session closes (timer or "End session"), write an "absent" record for
+// every student who was enrolled before it started and has no record.
+// The app also computes absentees itself (Session Results), so this only
+// makes the stored data complete for reports and Firestore exports.
+// ---------------------------------------------------------------------------
+exports.markAbsentees = onDocumentUpdated("attendance_sessions/{sessionId}", async (event) => {
+  const before = event.data.before.data();
+  const after = event.data.after.data();
+  if (!before || !after || before.status === "closed" || after.status !== "closed") return;
+
+  const sessionId = event.params.sessionId;
+  const [enrollments, records] = await Promise.all([
+    db.collection("enrollments").where("classID", "==", after.classID).get(),
+    db.collection("attendance_records").where("sessionID", "==", sessionId).get(),
+  ]);
+  const hasRecord = new Set(records.docs.map((d) => d.data().studentID));
+  const startMs = after.startTime.toMillis();
+
+  const batch = db.batch();
+  let writes = 0;
+  for (const e of enrollments.docs) {
+    const { studentID, joinedAt } = e.data();
+    if (!studentID || hasRecord.has(studentID)) continue;
+    if (joinedAt && joinedAt.toMillis() > startMs) continue; // joined after the session
+    batch.set(db.collection("attendance_records").doc(`${sessionId}_${studentID}`), {
+      sessionID: sessionId,
+      studentID,
+      classID: after.classID,
+      teacherID: after.teacherID,
+      timestamp: after.expiryTime,
+      status: "absent",
+      locationVerified: false,
+      quizSubmitted: false,
+    });
+    writes += 1;
+    if (writes === 450) break; // one batch is enough for a class
+  }
+  if (writes > 0) await batch.commit();
 });

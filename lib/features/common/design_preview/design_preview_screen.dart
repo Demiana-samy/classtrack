@@ -125,19 +125,28 @@ List<PreviewEntry> previewCatalog() => [
         id: '5-create-class',
         title: '5 Create Class',
         group: 'Member 1',
-        builder: (_) => const CreateClassScreen(),
+        builder: (_) => BlocProvider(
+          create: (_) => AuthCubit.preview(user: mockTeacherSara),
+          child: const CreateClassScreen(),
+        ),
       ),
       PreviewEntry(
         id: '6-class-details',
         title: '6 Class Details',
         group: 'Member 1',
-        builder: (_) => const ClassDetailsScreen(classId: 'c-mp'),
+        builder: (_) => BlocProvider(
+          create: (_) => AuthCubit.preview(user: mockTeacherSara),
+          child: const ClassDetailsScreen(classId: 'c-mp'),
+        ),
       ),
       PreviewEntry(
         id: '9-live',
         title: '9 Live Dashboard',
         group: 'Member 1',
-        builder: (_) => const LiveDashboardScreen(sessionId: 'session-preview'),
+        builder: (_) => BlocProvider(
+          create: (_) => AuthCubit.preview(user: mockTeacherSara),
+          child: const LiveDashboardScreen(sessionId: 'session-preview'),
+        ),
       ),
       PreviewEntry(
         id: '11-student-home',
@@ -183,8 +192,10 @@ List<PreviewEntry> previewCatalog() => [
         id: '10-results',
         title: '10 Session Results',
         group: 'Member 3',
-        builder: (_) =>
-            const SessionResultsScreen(sessionId: 'session-preview'),
+        builder: (_) => BlocProvider(
+          create: (_) => AuthCubit.preview(user: mockTeacherSara),
+          child: const SessionResultsScreen(sessionId: 'session-preview'),
+        ),
       ),
       PreviewEntry(
         id: 'bootstrap-error',

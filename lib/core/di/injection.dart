@@ -7,12 +7,17 @@ import '../../features/attendance/data/location_service.dart';
 import '../../features/attendance/data/session_repository.dart';
 import '../../features/attendance/presentation/active_session_cubit.dart';
 import '../../features/attendance/presentation/attendance_history_cubit.dart';
+import '../../features/attendance/presentation/live_dashboard_cubit.dart';
+import '../../features/attendance/presentation/session_results_cubit.dart';
 import '../../features/attendance/presentation/start_session_cubit.dart';
 import '../../features/auth/data/auth_repository.dart';
 import '../../features/auth/presentation/auth_cubit.dart';
 import '../../features/classes/data/class_repository.dart';
+import '../../features/classes/presentation/class_details_cubit.dart';
+import '../../features/classes/presentation/create_class_cubit.dart';
 import '../../features/classes/presentation/join_class_cubit.dart';
 import '../../features/classes/presentation/student_classes_cubit.dart';
+import '../../features/classes/presentation/teacher_classes_cubit.dart';
 
 final sl = GetIt.instance;
 
@@ -44,13 +49,23 @@ void setupDi() {
         sl<SessionRepository>(),
         sl<ClassRepository>(),
       ),
+    )
+    // Teacher side
+    ..registerFactory(() => TeacherClassesCubit(sl<ClassRepository>()))
+    ..registerFactory(() => CreateClassCubit(sl<ClassRepository>()))
+    ..registerFactory(() => ClassDetailsCubit(sl<ClassRepository>(), sl<SessionRepository>()))
+    ..registerFactory(
+      () => LiveDashboardCubit(
+        sl<SessionRepository>(),
+        sl<AttendanceRepository>(),
+        sl<ClassRepository>(),
+      ),
+    )
+    ..registerFactory(
+      () => SessionResultsCubit(
+        sl<SessionRepository>(),
+        sl<AttendanceRepository>(),
+        sl<ClassRepository>(),
+      ),
     );
-
-  // --- Cubits teammates will add (leader registers them here) ---
-  // sl.registerFactory(() => TeacherHomeCubit(sl<ClassRepository>()));
-  // sl.registerFactory(() => CreateClassCubit(sl<ClassRepository>()));
-  // sl.registerFactory(() => ClassDetailsCubit(sl<ClassRepository>()));
-  // sl.registerFactory(() => LiveDashboardCubit(sl<AttendanceRepository>(), sl<SessionRepository>()));
-  // sl.registerFactory(() => SessionResultsCubit(sl<AttendanceRepository>(), sl<ClassRepository>()));
-  // sl.registerFactory(() => QuizBuilderCubit());
 }

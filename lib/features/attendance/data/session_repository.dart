@@ -71,6 +71,24 @@ class SessionRepository {
               (q) => q.docs.map((d) => AttendanceSession.fromMap(d.id, d.data())).toList(),
             );
 
+  Future<AttendanceSession?> fetchSession(String sessionId) async {
+    final doc = await _db.collection(Col.sessions).doc(sessionId).get();
+    return doc.exists ? AttendanceSession.fromMap(doc.id, doc.data()!) : null;
+  }
+
+  /// Teacher ends a session early. firestore.rules allow only `status: closed`.
+  Future<void> closeSession(String sessionId) =>
+      _db.collection(Col.sessions).doc(sessionId).update({'status': 'closed'});
+
+  /// Sessions of one class, newest first, live (Class Details "Sessions" tab).
+  Stream<List<AttendanceSession>> watchClassSessions(String classId, {int limit = 30}) => _db
+      .collection(Col.sessions)
+      .where('classID', isEqualTo: classId)
+      .orderBy('startTime', descending: true)
+      .limit(limit)
+      .snapshots()
+      .map((q) => q.docs.map((d) => AttendanceSession.fromMap(d.id, d.data())).toList());
+
   /// Latest sessions of one class, newest first (uses the classID + startTime index).
   Future<List<AttendanceSession>> fetchSessionHistory(String classId, {int limit = 30}) async {
     final q = await _db
