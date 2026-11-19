@@ -14,7 +14,7 @@ jobs:
           channel: stable
           flutter-version: 3.44.9
       - run: flutter pub get
-      - run: flutter test tool/demo/screenshots_test.dart --update-goldens
+      - run: flutter test tool/demo/screenshots_test.dart 
       - name: Commit screenshots
         run: |
           git config user.name "github-actions"

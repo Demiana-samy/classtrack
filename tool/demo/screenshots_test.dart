@@ -25,7 +25,9 @@ import 'package:classtrack/features/quiz/data/mock_quiz.dart';
 import 'package:classtrack/features/quiz/data/models/quiz_question_model.dart';
 import 'package:classtrack/features/quiz/presentation/pages/quiz_build_screen.dart';
 import 'package:classtrack/features/quiz/presentation/pages/quiz_screen.dart';
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -66,8 +68,14 @@ Future<void> _images(WidgetTester t) async {
 
 Future<void> _shot(WidgetTester t, String name) async {
   await _images(t);
-  await t.pump(const Duration(milliseconds: 50));
-  await expectLater(find.byKey(_root), matchesGoldenFile('shots/$name.png'));
+  await t.pump(const Duration(seconds: 1)); // let ink splashes finish
+  final boundary = t.renderObject<RenderRepaintBoundary>(find.byKey(_root));
+  await t.runAsync(() async {
+    final image = await boundary.toImage(pixelRatio: 3);
+    final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
+    final file = File('tool/demo/shots/$name.png')..createSync(recursive: true);
+    file.writeAsBytesSync(bytes!.buffer.asUint8List());
+  });
 }
 
 void _case(String name, Widget home, {AppUser? user, Future<void> Function(WidgetTester t)? act}) {
@@ -130,7 +138,7 @@ void main() {
         await t.tap(find.text(mockQuizQuestions[i].options[0]));
         await t.pump();
         await t.tap(find.text('Save and next'));
-        await t.pump();
+        await t.pump(const Duration(seconds: 1));
       }
       await t.tap(find.text(mockQuizQuestions[2].options[1]));
       await t.pump();
