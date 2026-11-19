@@ -44,7 +44,7 @@ exports.startSession = onCall(async (req) => {
 
   const cls = await db.collection("classes").doc(classId).get();
   if (!cls.exists || cls.data().teacherID !== uid) {
-    throw new HttpsError("permission-denied", "Not your class");
+    throw new HttpsError("permission-denied", "You can only start sessions for your own classes.");
   }
 
   if (mode === "quiz") {

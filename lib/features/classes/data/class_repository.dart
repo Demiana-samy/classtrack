@@ -2,6 +2,7 @@ import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import '../../../core/constants/app_constants.dart';
+import 'class_info.dart';
 
 /// Answer from the `joinClass` Cloud Function.
 class JoinResult {
@@ -64,6 +65,31 @@ class ClassRepository {
       className: m['className'] as String? ?? '',
       alreadyJoined: m['alreadyJoined'] == true,
     );
+  }
+
+  /// Name, semester and teacher of one class. Null if missing or not readable
+  /// (firestore.rules: only the teacher and enrolled students can read a class).
+  Future<ClassInfo?> fetchClassInfo(String classId) async {
+    if (classId.isEmpty) return null;
+    final doc = await _db.collection(Col.classes).doc(classId).get();
+    final data = doc.data();
+    return data == null ? null : ClassInfo.fromMap(doc.id, data);
+  }
+
+  /// IDs of the classes the student is enrolled in, live.
+  Stream<List<String>> watchStudentClassIds(String studentId) =>
+      watchStudentEnrollments(studentId).map(
+        (q) => q.docs.map((d) => d.data()['classID'] as String? ?? '').where((id) => id.isNotEmpty).toList(),
+      );
+
+  /// classId -> when the student joined (null for old enrollments without joinedAt).
+  Future<Map<String, DateTime?>> fetchStudentJoinDates(String studentId) async {
+    final q = await _db.collection(Col.enrollments).where('studentID', isEqualTo: studentId).get();
+    return {
+      for (final d in q.docs)
+        if ((d.data()['classID'] as String? ?? '').isNotEmpty)
+          d.data()['classID'] as String: (d.data()['joinedAt'] as Timestamp?)?.toDate(),
+    };
   }
 
   Stream<QuerySnapshot<Map<String, dynamic>>> watchStudentEnrollments(String studentId) =>

@@ -37,7 +37,7 @@ class ErrorMessages {
       case 'already-exists':
         return 'A session is already running for this class.';
       case 'permission-denied':
-        return 'You can only start sessions for your own classes.';
+        return e.message ?? 'You are not allowed to do that.';
       case 'unauthenticated':
         return 'Your login expired. Please log in again.';
       case 'invalid-argument':

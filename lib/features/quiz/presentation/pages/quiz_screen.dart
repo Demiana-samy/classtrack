@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/app_strings.dart';
@@ -15,11 +16,16 @@ class QuizScreen extends StatefulWidget {
     this.sessionId,
     this.questions,
     this.onSubmit,
+    this.expiryTime,
   });
 
   final String? sessionId;
   final List<QuizQuestionDraft>? questions;
   final void Function(List<int> answers)? onSubmit;
+
+  /// Session end from the server (`attendance_sessions.expiryTime`). When set,
+  /// a countdown is shown and the quiz closes when time is up.
+  final DateTime? expiryTime;
 
   @override
   State<QuizScreen> createState() => _QuizScreenState();
@@ -29,6 +35,9 @@ class _QuizScreenState extends State<QuizScreen> {
   int _currentIndex = 0;
   late final List<int?> _selectedAnswers;
   bool _isSubmitted = false;
+  Timer? _timer;
+  Duration? _remaining;
+  bool _timeUp = false;
 
   List<QuizQuestionDraft> get _questions => widget.questions ?? const [];
 
@@ -36,6 +45,37 @@ class _QuizScreenState extends State<QuizScreen> {
   void initState() {
     super.initState();
     _selectedAnswers = List<int?>.filled(_questions.length, null);
+    if (widget.expiryTime != null) {
+      _remaining = _left();
+      _timer = Timer.periodic(const Duration(seconds: 1), (_) => _tick());
+      if (_remaining == Duration.zero) {
+        WidgetsBinding.instance.addPostFrameCallback((_) => _tick());
+      }
+    }
+  }
+
+  Duration _left() {
+    final left = widget.expiryTime!.difference(DateTime.now());
+    return left.isNegative ? Duration.zero : left;
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  void _tick() {
+    if (!mounted) return;
+    final remaining = _left();
+    setState(() => _remaining = remaining);
+    if (remaining == Duration.zero && !_timeUp) {
+      _timeUp = true;
+      _timer?.cancel();
+      QuizFeedback.showError(context, AppStrings.quizTimeUp);
+      // In a real session, go back: Active Session shows that the session ended.
+      if (widget.onSubmit != null) Navigator.of(context).maybePop();
+    }
   }
 
   void _handleNext() {
@@ -62,6 +102,10 @@ class _QuizScreenState extends State<QuizScreen> {
   }
 
   void _handleSubmit() {
+    if (_timeUp) {
+      QuizFeedback.showError(context, AppStrings.quizTimeUp);
+      return;
+    }
     if (_selectedAnswers[_currentIndex] == null) {
       QuizFeedback.showError(context, AppStrings.selectAnswerToContinue);
       return;
@@ -136,6 +180,13 @@ class _QuizScreenState extends State<QuizScreen> {
           onPressed: _handlePrevious,
         ),
         title: const Text(AppStrings.quizTitle),
+        actions: [
+          if (_remaining != null)
+            Padding(
+              padding: const EdgeInsets.only(right: 16),
+              child: Center(child: _TimerChip(remaining: _remaining!)),
+            ),
+        ],
       ),
       body: SafeArea(
         child: Column(
@@ -177,6 +228,41 @@ class _QuizScreenState extends State<QuizScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Countdown chip (design screen 14). Orange under 30 s, red under 10 s.
+class _TimerChip extends StatelessWidget {
+  const _TimerChip({required this.remaining});
+
+  final Duration remaining;
+
+  @override
+  Widget build(BuildContext context) {
+    final s = remaining.inSeconds;
+    final color = s <= 10
+        ? AppColors.danger
+        : s <= 30
+            ? AppColors.warning
+            : AppColors.success;
+    final label =
+        '${(s ~/ 60).toString().padLeft(2, '0')}:${(s % 60).toString().padLeft(2, '0')}';
+    return Container(
+      key: const Key('quiz-timer'),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.timer_outlined, size: 16, color: color),
+          const SizedBox(width: 4),
+          Text(label, style: TextStyle(color: color, fontWeight: FontWeight.w600)),
+        ],
       ),
     );
   }

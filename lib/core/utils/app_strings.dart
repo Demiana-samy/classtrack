@@ -38,6 +38,7 @@ abstract final class AppStrings {
   static const String quizCreatedMessage = 'All 5 questions have been configured successfully.';
   static const String quizCompleted = 'Quiz Completed';
   static const String quizCompletedDesc = 'You have answered all 5 questions.';
+  static const String quizTimeUp = 'Time is up. The session has ended.';
   static const String noQuestionsAvailable = 'No quiz questions available for this session.';
   static String questionOf(int current, int total) => 'Question $current of $total';
   static String loggedInAs(String name, String role) => 'Logged in as $name ($role)';
