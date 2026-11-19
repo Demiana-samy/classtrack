@@ -9,9 +9,9 @@ A teacher opens a 2-minute session. Only students physically inside the allowed 
 ## Current status
 Foundation is ready for parallel screen work. Routes, placeholders, mock data, and contracts are in place.
 
-**Done:** Splash (1), Login (2), Register (3), Result (15), theme, shared widgets, repositories, Cloud Functions, Firestore rules, Design Preview, CI.
+**Done:** Splash (1), Login (2), Register (3), Start Session (7), Active Session (13), Result (15), theme, shared widgets, repositories, Cloud Functions (incl. `joinClass`), Firestore rules + emulator tests, Design Preview, CI.
 
-**Ready for teammates (replace the screen file body only):** Teacher Home, Create Class, Class Details, Live Dashboard, Student Home, Join Class, Quiz, Attendance History, Quiz Builder, Session Results. Leader still builds Start Session and Active Session.
+**Ready for teammates (replace the screen file body only):** Teacher Home, Create Class, Class Details, Live Dashboard, Student Home, Join Class, Attendance History, Session Results. Quiz Builder and Quiz are merged (PR #2); Active Session opens Quiz with `onSubmit`.
 
 See `docs/TASKS.md` and `CONTRIBUTING.md`.
 
