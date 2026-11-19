@@ -94,14 +94,29 @@ Optional: `dart run flutter_launcher_icons` if launcher icons need regenerating.
 ## Firestore schema
 - `users`: name, email, role, studentID
 - `classes`: name, teacherID, semester, joinCode
-- `enrollments` (id `classId_studentId`): classID, studentID
+- `enrollments` (id `classId_studentId`): classID, studentID, joinedAt (created only by the `joinClass` function)
 - `attendance_sessions`: classID, teacherID, mode, latitude, longitude, radius, startTime, expiryTime, status
   - `questions/{0..4}`: order, text, options (no answers)
   - `private/answers`: correct (server only)
-- `attendance_records` (id `sessionId_studentId`): sessionID, studentID, timestamp, latitude, longitude, distance, status, quizScore, locationVerified, quizSubmitted
+- `attendance_records` (id `sessionId_studentId`): sessionID, studentID, classID, teacherID, timestamp, latitude, longitude, distance, status, quizScore, locationVerified, quizSubmitted
 
 ## Validation order (submitAttendance)
 session active -> student enrolled -> GPS present -> distance <= radius -> not already present -> (quiz) score on server -> write record.
+The "not already present" check and the write run in one transaction, so a double tap still gives one record.
+
+## Cloud Functions
+| Function | Who | What |
+|---|---|---|
+| `startSession` | teacher | creates the 2-minute session (+ quiz questions and a private answer key) |
+| `submitAttendance` | student | runs the validation above and writes the attendance record |
+| `joinClass` | student | checks the join code and creates the enrollment |
+| `closeExpiredSessions` | scheduler | marks expired sessions `closed` every minute |
+
+## Security rules (summary)
+- Clients never write `attendance_sessions` (except a teacher closing their own early), `attendance_records`, or `enrollments`.
+- A class is readable only by its teacher and enrolled students (join codes stay private).
+- Attendance records (they contain GPS) are readable only by that student or that session's teacher. Queries must filter on `studentID` or `teacherID`.
+- Quiz answers live in `private/answers`, which no client can read.
 
 ## Team
 | Name | ID | Contribution |

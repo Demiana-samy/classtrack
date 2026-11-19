@@ -52,8 +52,12 @@ class SessionRepository {
         .toList();
   }
 
+  /// Firestore `whereIn` throws on an empty list, so with no classes this stream
+  /// emits nothing: show the "join a class" empty state for that case.
   Stream<QuerySnapshot<Map<String, dynamic>>> watchActiveSessions(List<String> classIds) =>
-      _db
+      classIds.isEmpty
+          ? const Stream.empty()
+          : _db
           .collection(Col.sessions)
           .where('classID', whereIn: classIds.take(30).toList())
           .where('status', isEqualTo: 'active')

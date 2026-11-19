@@ -52,10 +52,17 @@ class AttendanceRepository {
     return AttendanceResult.fromMap(res.data as Map);
   }
 
-  Stream<QuerySnapshot<Map<String, dynamic>>> watchSessionRecords(String sessionId) => _db
-      .collection(Col.records)
-      .where('sessionID', isEqualTo: sessionId)
-      .snapshots();
+  /// Live records for the teacher's dashboard. The `teacherID` filter is
+  /// required: firestore.rules only allow records of the teacher's own sessions.
+  Stream<QuerySnapshot<Map<String, dynamic>>> watchSessionRecords(
+    String sessionId, {
+    required String teacherId,
+  }) =>
+      _db
+          .collection(Col.records)
+          .where('sessionID', isEqualTo: sessionId)
+          .where('teacherID', isEqualTo: teacherId)
+          .snapshots();
 
   Stream<QuerySnapshot<Map<String, dynamic>>> watchStudentRecords(String studentId) => _db
       .collection(Col.records)

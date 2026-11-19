@@ -19,7 +19,7 @@ void setupDi() {
 
   sl
     ..registerLazySingleton(() => AuthRepository(FirebaseAuth.instance, db))
-    ..registerLazySingleton(() => ClassRepository(db))
+    ..registerLazySingleton(() => ClassRepository(db, functions))
     ..registerLazySingleton(() => SessionRepository(db, functions))
     ..registerLazySingleton(() => AttendanceRepository(db, functions))
     ..registerLazySingleton(() => LocationService())

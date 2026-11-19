@@ -1,10 +1,25 @@
 import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import '../../../core/constants/app_constants.dart';
 
+/// Answer from the `joinClass` Cloud Function.
+class JoinResult {
+  const JoinResult({
+    required this.classId,
+    required this.className,
+    required this.alreadyJoined,
+  });
+
+  final String classId;
+  final String className;
+  final bool alreadyJoined;
+}
+
 class ClassRepository {
-  ClassRepository(this._db);
+  ClassRepository(this._db, this._functions);
   final FirebaseFirestore _db;
+  final FirebaseFunctions _functions;
 
   String _generateCode() {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // no 0/O/1/I
@@ -38,20 +53,17 @@ class ClassRepository {
   Stream<QuerySnapshot<Map<String, dynamic>>> watchTeacherClasses(String teacherId) =>
       _db.collection(Col.classes).where('teacherID', isEqualTo: teacherId).snapshots();
 
-  /// Enrollment doc id is `classId_studentId`, so a student can join a class only once.
-  Future<void> joinByCode({required String code, required String studentId}) async {
-    final q = await _db
-        .collection(Col.classes)
-        .where('joinCode', isEqualTo: code.trim().toUpperCase())
-        .limit(1)
-        .get();
-    if (q.docs.isEmpty) throw Exception('Invalid class code');
-    final classId = q.docs.first.id;
-    await _db.collection(Col.enrollments).doc('${classId}_$studentId').set({
-      'classID': classId,
-      'studentID': studentId,
-      'joinedAt': FieldValue.serverTimestamp(),
-    });
+  /// Joins the signed-in student to a class. The code is checked by the
+  /// `joinClass` Cloud Function; the app cannot write enrollments itself.
+  /// Throws [FirebaseFunctionsException] with code `not-found` for a wrong code.
+  Future<JoinResult> joinByCode(String code) async {
+    final res = await _functions.httpsCallable('joinClass').call({'code': code.trim()});
+    final m = res.data as Map;
+    return JoinResult(
+      classId: m['classId'] as String,
+      className: m['className'] as String? ?? '',
+      alreadyJoined: m['alreadyJoined'] == true,
+    );
   }
 
   Stream<QuerySnapshot<Map<String, dynamic>>> watchStudentEnrollments(String studentId) =>
