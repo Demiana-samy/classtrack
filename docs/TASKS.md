@@ -10,13 +10,13 @@ Status: **Ready** = UI can be built against mock data and the route is registere
 | 1 | Splash | Leader | `features/auth` | `lib/features/auth/presentation/splash_screen.dart` | Done |
 | 2 | Login | Leader | `features/auth` | `lib/features/auth/presentation/login_screen.dart` | Done |
 | 3 | Register | Leader | `features/auth` | `lib/features/auth/presentation/register_screen.dart` | Done |
-| 4 | Teacher Home | Member 1 | `features/classes` | `lib/features/classes/presentation/teacher_home_screen.dart` | Ready |
-| 5 | Create Class | Member 1 | `features/classes` | `lib/features/classes/presentation/create_class_screen.dart` | Ready |
-| 6 | Class Details | Member 1 | `features/classes` | `lib/features/classes/presentation/class_details_screen.dart` | Ready |
+| 4 | Teacher Home | Member 1 | `features/classes` | `lib/features/classes/presentation/teacher_home_screen.dart` | Done |
+| 5 | Create Class | Member 1 | `features/classes` | `lib/features/classes/presentation/create_class_screen.dart` | Done |
+| 6 | Class Details | Member 1 | `features/classes` | `lib/features/classes/presentation/class_details_screen.dart` | Done |
 | 7 | Start Session | Leader | `features/attendance` | `lib/features/attendance/presentation/start_session_screen.dart` | Done |
-| 8 | Quiz Builder | Member 3 | `features/quiz` | `lib/features/quiz/presentation/pages/quiz_build_screen.dart` | Ready |
-| 9 | Live Dashboard | Member 1 | `features/attendance` | `lib/features/attendance/presentation/live_dashboard_screen.dart` | Ready |
-| 10 | Session Results | Member 3 | `features/attendance` | `lib/features/attendance/presentation/session_results_screen.dart` | Ready |
+| 8 | Quiz Builder | Member 3 | `features/quiz` | `lib/features/quiz/presentation/pages/quiz_build_screen.dart` | Done |
+| 9 | Live Dashboard | Member 1 | `features/attendance` | `lib/features/attendance/presentation/live_dashboard_screen.dart` | Done |
+| 10 | Session Results | Member 3 | `features/attendance` | `lib/features/attendance/presentation/session_results_screen.dart` | Done |
 | 11 | Student Home | Member 2 | `features/classes` | `lib/features/classes/presentation/student_home_screen.dart` | Done |
 | 12 | Join Class | Member 2 | `features/classes` | `lib/features/classes/presentation/join_class_screen.dart` | Done |
 | 13 | Active Session | Leader | `features/attendance` | `lib/features/attendance/presentation/active_session_screen.dart` | Done |
