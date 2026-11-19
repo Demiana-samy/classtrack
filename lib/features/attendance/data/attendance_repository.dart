@@ -65,6 +65,26 @@ class AttendanceRepository {
           .where('teacherID', isEqualTo: teacherId)
           .snapshots();
 
+  /// Live records of one session as models (teacher dashboard).
+  Stream<List<AttendanceRecord>> watchSessionRecordModels(
+    String sessionId, {
+    required String teacherId,
+  }) =>
+      watchSessionRecords(sessionId, teacherId: teacherId)
+          .map((q) => q.docs.map((d) => AttendanceRecord.fromMap(d.data())).toList());
+
+  Future<List<AttendanceRecord>> fetchSessionRecords(
+    String sessionId, {
+    required String teacherId,
+  }) async {
+    final q = await _db
+        .collection(Col.records)
+        .where('sessionID', isEqualTo: sessionId)
+        .where('teacherID', isEqualTo: teacherId)
+        .get();
+    return q.docs.map((d) => AttendanceRecord.fromMap(d.data())).toList();
+  }
+
   /// The student's own records (firestore.rules allow studentID == me only).
   Future<List<AttendanceRecord>> fetchStudentRecords(String studentId) async {
     final q = await _db.collection(Col.records).where('studentID', isEqualTo: studentId).get();
