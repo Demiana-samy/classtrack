@@ -28,6 +28,13 @@ class ClassRepository {
     return ref.id;
   }
 
+  /// Class name for headers (e.g. Active Session). Null if the class is missing.
+  Future<String?> fetchClassName(String classId) async {
+    if (classId.isEmpty) return null;
+    final doc = await _db.collection(Col.classes).doc(classId).get();
+    return doc.data()?['name'] as String?;
+  }
+
   Stream<QuerySnapshot<Map<String, dynamic>>> watchTeacherClasses(String teacherId) =>
       _db.collection(Col.classes).where('teacherID', isEqualTo: teacherId).snapshots();
 

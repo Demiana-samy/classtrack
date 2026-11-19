@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/error_view.dart';
 import '../../attendance/data/mock_attendance.dart';
@@ -79,6 +80,15 @@ List<PreviewEntry> previewCatalog() => [
         title: '13 Active Session',
         group: 'Leader',
         builder: (_) => const ActiveSessionScreen(sessionId: 'session-preview'),
+      ),
+      PreviewEntry(
+        id: '13-active-session-quiz',
+        title: '13 Active Session (quiz)',
+        group: 'Leader',
+        builder: (_) => const ActiveSessionScreen(
+          sessionId: 'session-preview',
+          previewMode: Modes.quiz,
+        ),
       ),
       PreviewEntry(
         id: '15-result-ok',

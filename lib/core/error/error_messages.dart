@@ -1,3 +1,4 @@
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 /// Maps platform / Firebase errors to short, readable sentences for the UI.
@@ -28,6 +29,27 @@ class ErrorMessages {
       return 'Could not load your account. Check your connection and try again.';
     }
     return 'Could not start sign-in. Please try again.';
+  }
+
+  /// Errors thrown by `startSession` / `submitAttendance` (functions/index.js).
+  static String fromFunctions(FirebaseFunctionsException e) {
+    switch (e.code) {
+      case 'already-exists':
+        return 'A session is already running for this class.';
+      case 'permission-denied':
+        return 'You can only start sessions for your own classes.';
+      case 'unauthenticated':
+        return 'Your login expired. Please log in again.';
+      case 'invalid-argument':
+        return e.message ?? 'Some session details are not valid.';
+      case 'unavailable':
+      case 'deadline-exceeded':
+        return 'Could not reach the server. Check your internet connection and try again.';
+      case 'not-found':
+        return 'The server function was not found. Ask the leader to deploy Cloud Functions.';
+      default:
+        return generic;
+    }
   }
 
   static String fromAuth(FirebaseAuthException e) {
