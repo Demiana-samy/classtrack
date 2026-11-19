@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../quiz/data/models/quiz_question_model.dart';
+import 'attendance_session.dart';
 
 class SessionRepository {
   SessionRepository(this._db, this._functions);
@@ -29,6 +30,27 @@ class SessionRepository {
 
   Stream<DocumentSnapshot<Map<String, dynamic>>> watchSession(String sessionId) =>
       _db.collection(Col.sessions).doc(sessionId).snapshots();
+
+  /// Same as [watchSession] but mapped to a model. Emits null if the session does not exist.
+  Stream<AttendanceSession?> watchSessionModel(String sessionId) =>
+      watchSession(sessionId).map(
+        (doc) => doc.exists ? AttendanceSession.fromMap(doc.id, doc.data()!) : null,
+      );
+
+  /// Quiz questions for students. They never contain the correct answer, so
+  /// `correctIndex` is -1 here; the score is calculated by submitAttendance.
+  Future<List<QuizQuestionDraft>> fetchQuizQuestions(String sessionId) async {
+    final raw = await fetchQuestions(sessionId);
+    return raw
+        .map(
+          (m) => QuizQuestionDraft(
+            text: m['text'] as String? ?? '',
+            options: List<String>.from(m['options'] as List? ?? const []),
+            correctIndex: -1,
+          ),
+        )
+        .toList();
+  }
 
   Stream<QuerySnapshot<Map<String, dynamic>>> watchActiveSessions(List<String> classIds) =>
       _db

@@ -68,7 +68,13 @@ class _QuizScreenState extends State<QuizScreen> {
     }
 
     final answers = _selectedAnswers.whereType<int>().toList();
-    widget.onSubmit?.call(answers);
+
+    // Real sessions: students never get the answer key, so the score comes
+    // from submitAttendance. The caller (Active Session #13) shows Result #15.
+    if (widget.onSubmit != null) {
+      widget.onSubmit!(answers);
+      return;
+    }
 
     setState(() {
       _isSubmitted = true;
