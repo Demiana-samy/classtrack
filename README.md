@@ -7,11 +7,12 @@ A teacher opens a 2-minute session. Only students physically inside the allowed 
 **All validation runs on the server** (Cloud Function), never only on the phone.
 
 ## Current status
-Foundation is ready for parallel screen work. Routes, placeholders, mock data, and contracts are in place.
+**All 16 screens are built** and wired to Firebase through Cubits and repositories. CI runs `flutter analyze`, `flutter test` (widget + unit tests) and the Firestore rules tests on the emulator for every PR.
 
-**Done:** Splash (1), Login (2), Register (3), Start Session (7), Student Home (11), Join Class (12), Active Session (13), Quiz (14), Result (15), Attendance History (16), theme, shared widgets, repositories, Cloud Functions (incl. `joinClass`), Firestore rules + emulator tests, Design Preview, CI.
-
-**Ready for teammates (replace the screen file body only):** Teacher Home, Create Class, Class Details, Live Dashboard, Session Results. Quiz Builder and Quiz are merged (PR #2); Active Session opens Quiz with `onSubmit`.
+- Mode 1 (punch-in) and Mode 2 (5-question quiz) work end to end: Start Session → students see the live session → Punch In / Quiz → server validation → Result, Live Dashboard, Session Results.
+- Absent students are computed in the app (Session Results, Attendance History) and stored by the `markAbsentees` function when a session closes.
+- Bonus features done: CSV export of session results, attendance history.
+- Left for the team: deploy (see *Setup (leader, once)*), test on real phones, fill in the Team table, record the demo.
 
 See `docs/TASKS.md` and `CONTRIBUTING.md`.
 
@@ -111,6 +112,7 @@ The "not already present" check and the write run in one transaction, so a doubl
 | `submitAttendance` | student | runs the validation above and writes the attendance record |
 | `joinClass` | student | checks the join code and creates the enrollment |
 | `closeExpiredSessions` | scheduler | marks expired sessions `closed` every minute |
+| `markAbsentees` | trigger | when a session becomes `closed`, writes `absent` records for enrolled students with no record |
 
 ## Security rules (summary)
 - Clients never write `attendance_sessions` (except a teacher closing their own early), `attendance_records`, or `enrollments`.
