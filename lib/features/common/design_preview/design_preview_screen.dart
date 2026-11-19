@@ -158,13 +158,20 @@ List<PreviewEntry> previewCatalog() => [
         id: '14-quiz',
         title: '14 Quiz',
         group: 'Member 2',
-        builder: (_) => const QuizScreen(sessionId: 'session-preview'),
+        builder: (_) => QuizScreen(
+          sessionId: 'session-preview',
+          questions: mockQuizQuestions,
+          expiryTime: DateTime.now().add(const Duration(seconds: 92)),
+        ),
       ),
       PreviewEntry(
         id: '16-history',
         title: '16 Attendance History',
         group: 'Member 2',
-        builder: (_) => const AttendanceHistoryScreen(),
+        builder: (_) => BlocProvider(
+          create: (_) => AuthCubit.preview(user: mockStudentMohamed),
+          child: const AttendanceHistoryScreen(),
+        ),
       ),
       PreviewEntry(
         id: '8-quiz-builder',

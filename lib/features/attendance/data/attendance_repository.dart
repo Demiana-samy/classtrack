@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import '../../../core/constants/app_constants.dart';
+import 'attendance_record.dart';
 
 /// Result returned by the `submitAttendance` Cloud Function.
 class AttendanceResult {
@@ -63,6 +64,12 @@ class AttendanceRepository {
           .where('sessionID', isEqualTo: sessionId)
           .where('teacherID', isEqualTo: teacherId)
           .snapshots();
+
+  /// The student's own records (firestore.rules allow studentID == me only).
+  Future<List<AttendanceRecord>> fetchStudentRecords(String studentId) async {
+    final q = await _db.collection(Col.records).where('studentID', isEqualTo: studentId).get();
+    return q.docs.map((d) => AttendanceRecord.fromMap(d.data())).toList();
+  }
 
   Stream<QuerySnapshot<Map<String, dynamic>>> watchStudentRecords(String studentId) => _db
       .collection(Col.records)

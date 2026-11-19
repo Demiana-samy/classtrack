@@ -49,6 +49,7 @@ class _ActiveSessionView extends StatelessWidget {
         builder: (quizContext) => QuizScreen(
           sessionId: state.session?.id,
           questions: state.quizQuestions,
+          expiryTime: state.session?.expiryTime,
           onSubmit: (answers) => Navigator.of(quizContext).pop(answers),
         ),
       ),

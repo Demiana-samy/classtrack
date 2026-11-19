@@ -63,6 +63,25 @@ class SessionRepository {
           .where('status', isEqualTo: 'active')
           .snapshots();
 
+  /// Active sessions of these classes as models (empty list when there are no classes).
+  Stream<List<AttendanceSession>> watchActiveSessionModels(List<String> classIds) =>
+      classIds.isEmpty
+          ? Stream.value(const <AttendanceSession>[])
+          : watchActiveSessions(classIds).map(
+              (q) => q.docs.map((d) => AttendanceSession.fromMap(d.id, d.data())).toList(),
+            );
+
+  /// Latest sessions of one class, newest first (uses the classID + startTime index).
+  Future<List<AttendanceSession>> fetchSessionHistory(String classId, {int limit = 30}) async {
+    final q = await _db
+        .collection(Col.sessions)
+        .where('classID', isEqualTo: classId)
+        .orderBy('startTime', descending: true)
+        .limit(limit)
+        .get();
+    return q.docs.map((d) => AttendanceSession.fromMap(d.id, d.data())).toList();
+  }
+
   Future<List<Map<String, dynamic>>> fetchQuestions(String sessionId) async {
     final q = await _db
         .collection(Col.sessions)
