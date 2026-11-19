@@ -1,0 +1,24 @@
+name: Demo screenshots
+on:
+  push:
+    branches: [chore/demo-screenshots]
+permissions:
+  contents: write
+jobs:
+  shots:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: 3.44.9
+      - run: flutter pub get
+      - run: flutter test tool/demo/screenshots_test.dart --update-goldens
+      - name: Commit screenshots
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add -f tool/demo/shots/*.png
+          git commit -m "chore: demo screenshots [skip ci]" || echo "nothing to commit"
+          git push
